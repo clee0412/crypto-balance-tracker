@@ -10,6 +10,11 @@ services:
       - '5432:5432'
     volumes:
       - postgres-crypto-db-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   crypto-balance-tracker-java:
     build:
@@ -19,6 +24,10 @@ services:
     depends_on:
       - postgresql-crypto-db
     environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresql-crypto-db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+
       - POSTGRESQL_DATABASE=postgres
       - JWT_SIGNING_KEY=${JWT_SIGNING_KEY}
       - DEMO_COINGECKO_API_KEY=${DEMO_COINGECKO_API_KEY}
@@ -27,15 +36,15 @@ services:
     ports:
       - '8080:8080'
 
-  crypto-balance-tracker-ui:
-    build:
-      context: ../crypto-balance-tracker-ui
-      dockerfile: Dockerfile
-    container_name: 'crypto-balance-tracker-ui'
-    depends_on:
-      - crypto-balance-tracker-java
-    ports:
-      - '5173:5173'
+#  crypto-balance-tracker-ui:
+#    build:
+#      context: ../crypto-balance-tracker-ui
+#      dockerfile: Dockerfile
+#    container_name: 'crypto-balance-tracker-ui'
+#    depends_on:
+#      - crypto-balance-tracker-java
+#    ports:
+#      - '5173:5173'
 
 volumes:
   postgres-crypto-db-volume:
