@@ -26,17 +26,17 @@ import java.util.UUID;
 public class UserCrypto implements Serializable {
 
     @Id
-    private String id;
+    private String id; // id de usuario
 
-    private BigDecimal quantity;
+    private BigDecimal quantity; // cantidad que el usuario tiene
 
     @ManyToOne
     @JoinColumn(name = "platform_id")
-    private Platform platform;
+    private Platform platform; // la plataforma donde la tiene
 
     @ManyToOne
     @JoinColumn(name = "crypto_id")
-    private Crypto crypto;
+    private Crypto crypto; // referencia a cache externa
 
     public UserCrypto(BigDecimal quantity, Platform platform, Crypto crypto) {
         this.id = UUID.randomUUID().toString();
