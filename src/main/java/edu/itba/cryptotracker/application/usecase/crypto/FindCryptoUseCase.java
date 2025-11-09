@@ -12,7 +12,7 @@ import java.util.Optional;
 @Slf4j
 @Service
 @AllArgsConstructor
-public class FindCryptoUseCasePort implements edu.itba.cryptotracker.domain.usecases.FindCryptoUseCasePort {
+public class FindCryptoUseCase implements edu.itba.cryptotracker.domain.usecases.FindCryptoUseCasePort {
     // depende de la interfaz (en domain -> dependency inversion)
     private final CryptoRepositoryPort cryptoRepositoryPort;
 
@@ -25,7 +25,7 @@ public class FindCryptoUseCasePort implements edu.itba.cryptotracker.domain.usec
             return Optional.empty();
         }
 
-        final var normalizedSymbol = symbol.toLowerCase();
+        final var normalizedSymbol = symbol.toUpperCase();
 
         return cryptoRepositoryPort.findBySymbol(normalizedSymbol);
     }

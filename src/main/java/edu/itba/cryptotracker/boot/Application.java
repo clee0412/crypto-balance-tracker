@@ -10,8 +10,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @SpringBootApplication
 @ComponentScan(basePackages = "edu.itba.cryptotracker")
-@EnableJpaRepositories(basePackages = "edu.itba.cryptotracker.adapter.output.jpa")
-@EntityScan(basePackages = "edu.itba.cryptotracker.adapter.output.jpa.entity")
+@EnableJpaRepositories(basePackages = "edu.itba.cryptotracker.adapter.output.persistence.jpa")
+@EntityScan(basePackages = "edu.itba.cryptotracker.adapter.output.persistence.jpa.entity")
 @EnableConfigurationProperties
 public class Application {
 

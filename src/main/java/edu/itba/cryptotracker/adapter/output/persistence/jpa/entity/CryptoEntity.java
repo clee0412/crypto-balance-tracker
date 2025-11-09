@@ -8,9 +8,7 @@ import java.time.Instant;
 
 /**
  * JPA Entity para persistencia.
- *
- * Representa cómo se guarda Crypto en la base de datos.
- * NO es parte del dominio.
+ * ID = Coingecko ID (natural key): "bitcoin", "ethereum", etc.
  */
 @Entity
 @Table(name = "crypto")
@@ -18,13 +16,14 @@ import java.time.Instant;
 public class CryptoEntity {
 
     @Id
-    private String id;
+    @Column(length = 100)
+    private String id;  // Coingecko ID (e.g., "bitcoin", "ethereum")
 
     @Column(unique = true, nullable = false, length = 20)
-    private String symbol;
+    private String symbol;  // Ticker symbol (e.g., "BTC", "ETH")
 
     @Column(nullable = false, length = 100)
-    private String name;
+    private String name;  // Display name (e.g., "Bitcoin", "Ethereum")
 
     @Column(length = 500)
     private String imageUrl;

@@ -19,8 +19,9 @@ public class CoingeckoApiMapper {
         final var imageUrl = infoDTO.image() != null ? infoDTO.image().getLarge() : null;
 
         return Crypto.create(
-            infoDTO.symbol().toLowerCase(),
-            infoDTO.name(),
+            infoDTO.id(),           // Coingecko ID (e.g., "bitcoin")
+            infoDTO.symbol(),       // Symbol (e.g., "btc" -> normalized to "BTC" in factory)
+            infoDTO.name(),         // Name (e.g., "Bitcoin")
             imageUrl,
             prices
         );

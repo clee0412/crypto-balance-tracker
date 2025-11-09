@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 public record CoingeckoPricesDTO(BigDecimal usd, BigDecimal eur, BigDecimal btc) {
-    // Extrae precios del Map anidado de Coingecko.
+    // Extrae precios del Map anidado de Coingecko
     public static CoingeckoPricesDTO fromMap(Map<String, Object> pricesMap) {
         return new CoingeckoPricesDTO(
             new BigDecimal(pricesMap.get("usd").toString()),

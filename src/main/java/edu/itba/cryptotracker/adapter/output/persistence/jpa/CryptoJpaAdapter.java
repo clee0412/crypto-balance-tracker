@@ -19,11 +19,15 @@ public class CryptoJpaAdapter implements CryptoRepositoryPort {
     private final CryptoJpaRepository jpaRepository;
     private final CryptoJpaMapper entityMapper;
 
-
     @Override
     public void save(Crypto crypto) {
         var entity = entityMapper.toEntity(crypto);
         jpaRepository.save(entity);
+    }
+
+    @Override
+    public Optional<Crypto> findById(String coingeckoId) {
+        return jpaRepository.findById(coingeckoId).map(entityMapper::toDomain);
     }
 
     @Override

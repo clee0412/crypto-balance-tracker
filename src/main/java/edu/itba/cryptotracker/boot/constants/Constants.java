@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 public final class Constants {
     // ========== API Paths ==========
 
-    public static final String API_V1 = "/api/v1";
+    public static final String API_V1 = "/api/v3";
     public static final String CRYPTOS_ENDPOINT = API_V1 + "/cryptos";
     public static final String PLATFORMS_ENDPOINT = API_V1 + "/platforms";
     public static final String USER_CRYPTOS_ENDPOINT = API_V1 + "/user-cryptos";

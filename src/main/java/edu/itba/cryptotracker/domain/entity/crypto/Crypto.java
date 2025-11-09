@@ -5,10 +5,10 @@ import lombok.*;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 
 // crypto entity -> representa criptomoneda en el dominio
 // contiene reglas de negocio
+// ID = Coingecko ID (e.g., "bitcoin", "ethereum") - natural key from external API
 @ToString()
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -16,27 +16,28 @@ import java.util.UUID;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Crypto {
     @EqualsAndHashCode.Include
-    @NonNull // -> throws nullpointerexception so idk if we should use it not
-    private final String id;
-    @EqualsAndHashCode.Include
     @NonNull
-    private final String symbol; // this has to be UPPERCASE
-    @EqualsAndHashCode.Include
-    @NonNull
-    private final String name;
+    private final String id;  // Coingecko ID (e.g., "bitcoin", "ethereum")
 
-//    @ToString.Exclude
+    @EqualsAndHashCode.Include
+    @NonNull
+    private final String symbol;  // Ticker symbol (e.g., "BTC", "ETH")
+
+    @EqualsAndHashCode.Include
+    @NonNull
+    private final String name;  // Display name (e.g., "Bitcoin", "Ethereum")
+
     private String imageUrl;
-//    @ToString.Exclude
     private LastKnownPrices lastKnownPrices;
     private Instant lastUpdatedAt;
 
-    // factory method to create new -> assumes that data was validated before input
-    public static Crypto create(String symbol, String name,
+    // Factory method to create new crypto from Coingecko data
+    // Assumes data was validated before input
+    public static Crypto create(String coingeckoId, String symbol, String name,
                                 String imageUrl, LastKnownPrices prices) {
         return new Crypto(
-            UUID.randomUUID().toString(),
-            symbol,
+            coingeckoId.toLowerCase(),  // Normalize Coingecko ID to lowercase
+            symbol.toUpperCase(),        // Normalize symbol to uppercase
             name,
             imageUrl,
             prices,

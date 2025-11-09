@@ -1,9 +1,9 @@
 package edu.itba.cryptotracker.adapter.output.external.coingecko;
 
+import edu.itba.cryptotracker.adapter.output.external.coingecko.config.CoingeckoApiConfig;
 import edu.itba.cryptotracker.adapter.output.external.coingecko.dto.CoingeckoCryptoInfoDTO;
 import edu.itba.cryptotracker.adapter.output.external.coingecko.dto.CoingeckoPricesDTO;
 import edu.itba.cryptotracker.adapter.output.external.coingecko.mapper.CoingeckoApiMapper;
-import edu.itba.cryptotracker.boot.config.properties.CoingeckoApiConfig;
 import edu.itba.cryptotracker.domain.exception.ExternalApiException;
 import edu.itba.cryptotracker.adapter.output.httpclient.HttpClient;
 import edu.itba.cryptotracker.adapter.output.httpclient.dto.HttpRequest;
@@ -27,33 +27,30 @@ public class CoingeckoAdapter implements CryptoProviderPort {
     private final CoingeckoApiMapper mapper = new CoingeckoApiMapper();
 
     @Override
-    public Optional<Crypto> fetchCrypto(String symbol) {
+    public Optional<Crypto> fetchCrypto(String coingeckoId) {
         try {
-            log.info("Fetching crypto from Coingecko: {}", symbol);
+            log.info("Fetching crypto from Coingecko: {}", coingeckoId);
 
-            final var coingeckoId = symbol.toLowerCase();
-            if (coingeckoId == null) {
-                log.warn("Unknown symbol: {}", symbol);
-                return Optional.empty();
-            }
+            final var normalizedId = coingeckoId.toLowerCase();
 
             // Fetch info
-            final var infoDTO = fetchCryptoInfo(coingeckoId);
+            final var infoDTO = fetchCryptoInfo(normalizedId);
             if (infoDTO == null) {
+                log.warn("Crypto not found in Coingecko: {}", coingeckoId);
                 return Optional.empty();
             }
 
             // Fetch prices
-            final var pricesDTO = fetchPrices(coingeckoId);
+            final var pricesDTO = fetchPrices(normalizedId);
 
             final var crypto = mapper.toDomain(infoDTO, pricesDTO);
 
-            log.info("Successfully fetched: {}", symbol);
+            log.info("Successfully fetched: {} ({})", crypto.getName(), crypto.getSymbol());
             return Optional.of(crypto);
 
         } catch (final Exception e) {
-            log.error("Failed to fetch crypto: {}", symbol, e);
-            throw new ExternalApiException("Failed to fetch: " + symbol);
+            log.error("Failed to fetch crypto: {}", coingeckoId, e);
+            throw new ExternalApiException("Failed to fetch: " + coingeckoId);
         }
     }
 

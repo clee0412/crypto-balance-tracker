@@ -12,12 +12,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-// REST Controller para Crypto.
-// responsabilidades: 1. recibir peticiones HTTP, 2. llamar a use cases, 3. convertir domain -> DTOs, 4. manejar codigos http
+/**
+ * REST Controller for Crypto resources.
+ *
+ * Responsibilities:
+ * 1. Receive HTTP requests
+ * 2. Delegate to use cases
+ * 3. Convert domain entities to DTOs
+ * 4. Return appropriate HTTP responses
+ *
+ * RESTful endpoint design:
+ * - GET /api/cryptos              -> List all cached cryptos
+ * - GET /api/cryptos/{id}         -> Get crypto by Coingecko ID (smart caching)
+ * - GET /api/cryptos?symbol=BTC   -> Get crypto by ticker symbol
+ */
 @Slf4j
 @RestController
 @RequestMapping(Constants.CRYPTOS_ENDPOINT)
@@ -28,14 +41,29 @@ public class CryptoController {
     private final GetAllCryptosUseCasePort getAllCryptosUseCase;
     private final RetrieveCryptoUseCasePort cryptoRetrieverUseCase;
 
-    private final CryptoRestMapper mapper = new CryptoRestMapper(); // todo: no esta mal por inyeccion de dependencias?
+    private final CryptoRestMapper mapper = new CryptoRestMapper();
 
+    /**
+     * GET /api/cryptos
+     * GET /api/cryptos?symbol=BTC
+     *
+     * Lists all cryptos OR searches by symbol.
+     */
     @GetMapping
-    public ResponseEntity<List<CryptoResponseDTO>> getAllCryptos() {
+    public ResponseEntity<?> getCryptos(@RequestParam(required = false) String symbol) {
+        if (symbol != null) {
+            log.info("GET /api/cryptos?symbol={}", symbol);
+            return cryptoFinderUseCase.execute(symbol)
+                .map(mapper::toResponse)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> {
+                    log.warn("Crypto not found with symbol: {}", symbol);
+                    return ResponseEntity.notFound().build();
+                });
+        }
+
         log.info("GET /api/cryptos");
-
         final var cryptos = getAllCryptosUseCase.execute();
-
         final var response = cryptos.stream()
             .map(mapper::toResponse)
             .toList();
@@ -43,28 +71,27 @@ public class CryptoController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{symbol}")
-    public ResponseEntity<CryptoResponseDTO> getCryptoBySymbol(@PathVariable final String symbol) {
-        log.info("GET /api/cryptos/{}", symbol);
+    /**
+     * GET /api/cryptos/{coingeckoId}
+     *
+     * Retrieves crypto by Coingecko ID with smart caching:
+     * - Returns cached data if fresh (< 10 min old)
+     * - Automatically refreshes from API if stale
+     * - Fetches from API if not cached
+     *
+     * Examples:
+     * - GET /api/cryptos/bitcoin
+     * - GET /api/cryptos/ethereum
+     */
+    @GetMapping("/{coingeckoId}")
+    public ResponseEntity<CryptoResponseDTO> getCryptoById(@PathVariable final String coingeckoId) {
+        log.info("GET /api/cryptos/{}", coingeckoId);
 
-        return cryptoFinderUseCase.execute(symbol)
+        return cryptoRetrieverUseCase.execute(coingeckoId)
             .map(mapper::toResponse)
             .map(ResponseEntity::ok)
             .orElseGet(() -> {
-                log.warn("Crypto not found in cache: {}", symbol);
-                return ResponseEntity.notFound().build();
-            });
-    }
-
-    @GetMapping("/{symbol}/retrieve")
-    public ResponseEntity<CryptoResponseDTO> retrieveCrypto(@PathVariable final String symbol) {
-        log.info("GET /api/cryptos/{}/retrieve", symbol);
-
-        return cryptoRetrieverUseCase.execute(symbol)
-            .map(mapper::toResponse)
-            .map(ResponseEntity::ok)
-            .orElseGet(() -> {
-                log.warn("Crypto not found: {}", symbol);
+                log.warn("Crypto not found: {}", coingeckoId);
                 return ResponseEntity.notFound().build();
             });
     }

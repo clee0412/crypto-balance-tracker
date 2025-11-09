@@ -6,10 +6,13 @@ import java.util.Optional;
 
 public interface CryptoProviderPort {
     /**
-     * fetechea crypto completo desde API externa
+     * Fetches complete crypto data from external API (Coingecko).
      *
-     * El adapter se encarga de llamar a los endpoints necesarios
-     * y ensamblar el Crypto completo
+     * @param coingeckoId The Coingecko ID (e.g., "bitcoin", "ethereum")
+     * @return Optional containing the crypto if found, empty otherwise
+     *
+     * The adapter handles calling necessary endpoints and assembling
+     * the complete Crypto entity.
      */
-    Optional<Crypto> fetchCrypto(String symbol);
+    Optional<Crypto> fetchCrypto(String coingeckoId);
 }

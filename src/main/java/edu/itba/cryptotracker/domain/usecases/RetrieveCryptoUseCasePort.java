@@ -6,10 +6,13 @@ import java.util.Optional;
 
 public interface RetrieveCryptoUseCasePort {
     /**
-     * Recupera crypto con estrategia de cache:
-     * - Cache hit + fresh → retorna cache
-     * - Cache hit + stale → actualiza y retorna
-     * - Cache miss → fetchea de API
+     * Retrieves crypto with caching strategy:
+     * - Cache hit + fresh → returns cached data
+     * - Cache hit + stale → refreshes and returns
+     * - Cache miss → fetches from API
+     *
+     * @param coingeckoId The Coingecko ID (e.g., "bitcoin", "ethereum")
+     * @return Optional containing the crypto if found, empty otherwise
      */
-    Optional<Crypto> execute(String symbol);
+    Optional<Crypto> execute(String coingeckoId);
 }
