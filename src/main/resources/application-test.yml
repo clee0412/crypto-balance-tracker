@@ -1,0 +1,5 @@
+coingecko:
+  api:
+    base-url: http://localhost:${wiremock.server.port}  # Mock server
+    timeout-seconds: 5
+    retry-attempts: 1

@@ -48,7 +48,9 @@ dependencies {
 	implementation "org.springframework.boot:spring-boot-starter-data-jpa"
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion"
 	implementation "org.postgresql:postgresql:$postgresqlVersion"
-	implementation "org.springframework.boot:spring-boot-starter-security"
+	runtimeOnly "com.h2database:h2"
+	// Commented out for local development - uncomment if you need security
+	// implementation "org.springframework.boot:spring-boot-starter-security"
 	implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion"
 	implementation "org.springframework.retry:spring-retry:$springRetryVersion"
 	implementation "org.liquibase:liquibase-core:$liquibaseVersion"
@@ -67,7 +69,7 @@ dependencies {
 
 	testImplementation "com.squareup.okhttp3:mockwebserver:$okHttp3Version"
 	testImplementation "org.springframework.boot:spring-boot-starter-test"
-	testImplementation "org.springframework.security:spring-security-test"
+	// testImplementation "org.springframework.security:spring-security-test"
 }
 
 tasks.named('bootBuildImage') {

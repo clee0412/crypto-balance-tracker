@@ -1,0 +1,37 @@
+#spring:
+#  application:
+#    name: crypto-balance-tracker
+#  liquibase:
+#    change-log: classpath:db/changelog/master.yaml
+#    enabled: true
+#  profiles:
+#    active: ${ENV_PROFILE:local}
+#    group:
+#      default: local
+#
+#coingecko:
+#  api-key:
+#    demo: ${DEMO_COINGECKO_API_KEY}
+#    pro: ${PRO_COINGECKO_API_KEY}
+#  url: "https://api.coingecko.com/api/v3"
+#  pro:
+#    url: "https://pro-api.coingecko.com/api/v3"
+#
+#springdoc:
+#  swagger-ui:
+#    defaultModelsExpandDepth: -1
+#
+#max-limit-crypto: 10
+#update-crypto-info-cron: "0 */5 * ? * *"
+#save-day-balance-cron: "0 */30 * ? * *"
+#
+#insights:
+#  cryptos: 15
+#
+#security:
+#  enabled: false
+#
+#jwt:
+#  signing-key: ${JWT_SIGNING_KEY}
+#
+#allowed-origins: "http://localhost:5173"

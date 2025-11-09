@@ -1,37 +1,44 @@
 spring:
   application:
-    name: crypto-balance-tracker
+    name: CryptoTracker
+
+  datasource:
+    url: jdbc:h2:mem:cryptotracker_db
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
   liquibase:
-    change-log: classpath:db/changelog/master.yaml
-    enabled: true
-  profiles:
-    active: ${ENV_PROFILE:local}
-    group:
-      default: local
+    change-log: classpath:/db/changelog/master.yaml
 
-coingecko:
-  api-key:
-    demo: ${DEMO_COINGECKO_API_KEY}
-    pro: ${PRO_COINGECKO_API_KEY}
-  url: "https://api.coingecko.com/api/v3"
-  pro:
-    url: "https://pro-api.coingecko.com/api/v3"
-
-springdoc:
-  swagger-ui:
-    defaultModelsExpandDepth: -1
-
-max-limit-crypto: 10
-update-crypto-info-cron: "0 */5 * ? * *"
-save-day-balance-cron: "0 */30 * ? * *"
-
-insights:
-  cryptos: 15
+server:
+  port: 8080
 
 security:
   enabled: false
 
-jwt:
-  signing-key: ${JWT_SIGNING_KEY}
+coingecko:
+  api:
+    base-url: https://api.coingecko.com/api/v3
+    timeout-seconds: 10
+    retry-attempts: 3
+    api-key: ${DEMO_COINGECKO_API_KEY:}
 
-allowed-origins: "http://localhost:5173"
+logging:
+  level:
+    edu.itba.cryptotracker: DEBUG
+    org.springframework.web: INFO
+    root: INFO
