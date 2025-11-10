@@ -18,18 +18,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
-/**
- * REST Controller for Crypto resources.
- *
- * Responsibilities:
- * - HTTP request/response handling
- * - DTO mapping (API <-> Application layer)
- * - HTTP status code decisions
- *
- * RESTful endpoints:
- * - GET /api/cryptos           -> List all cached cryptos
- * - GET /api/cryptos/{id}      -> Get crypto by Coingecko ID (with caching)
- */
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/cryptos")
@@ -73,6 +61,7 @@ public class CryptoController {
         @ApiResponse(responseCode = "404", description = "Crypto not found"),
         @ApiResponse(responseCode = "503", description = "External API unavailable")
     })
+    @GetMapping
     public ResponseEntity<CryptoResponseDTO> getCryptoById(
         @PathVariable String coingeckoId) {
         log.info("GET /api/cryptos/{}", coingeckoId);
