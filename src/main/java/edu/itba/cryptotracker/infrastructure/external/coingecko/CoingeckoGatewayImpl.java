@@ -70,20 +70,6 @@ public class CoingeckoGatewayImpl implements CryptoProviderGateway, PlatformProv
             .build();
 
         final var response = httpClient.get(request);
-
-        if (response.isRateLimitError()) {
-            throw new CoingeckoRateLimitException();
-        }
-
-        if (response.isUnauthorized()) {
-            throw new CoingeckoUnauthorizedException();
-        }
-
-        if (response.isNotFound()) {
-            log.warn("Crypto not found in Coingecko: {}", coingeckoId);
-            throw new CoingeckoNotFoundException(coingeckoId);
-        }
-
         if (response.isError()) {
             log.error("Coingecko API error: {} - {}", response.statusCode(), response.statusMessage());
             throw new ExternalApiException("Coingecko API error: " + response.statusMessage());
@@ -108,19 +94,6 @@ public class CoingeckoGatewayImpl implements CryptoProviderGateway, PlatformProv
             .build();
 
         final var response = httpClient.get(request);
-
-        if (response.isRateLimitError()) {
-            throw new CoingeckoRateLimitException();
-        }
-
-        if (response.isUnauthorized()) {
-            throw new CoingeckoUnauthorizedException();
-        }
-
-        if (response.isNotFound()) {
-            log.warn("Prices not found for: {}", coingeckoId);
-            throw new CoingeckoNotFoundException(coingeckoId);
-        }
 
         if (response.isError()) {
             log.error("Coingecko API error fetching prices: {} - {}",
@@ -154,24 +127,9 @@ public class CoingeckoGatewayImpl implements CryptoProviderGateway, PlatformProv
                 .build();
 
             final var response = httpClient.get(request);
-
-            if (response.isRateLimitError()) {
-                throw new CoingeckoRateLimitException();
-            }
-
-            if (response.isUnauthorized()) {
-                throw new CoingeckoUnauthorizedException();
-            }
-
-            if (response.isNotFound()) {
-                log.warn("Exchange not found in Coingecko: {}", exchangeId);
-                throw new PlatformNotFoundException(exchangeId);
-            }
-
             if (response.isError()) {
-                log.error("Coingecko API error: {} - {}",
-                    response.statusCode(), response.statusMessage());
-                throw new PlatformNotFoundException("Coingecko API error: " + response.statusMessage());
+                log.error("Coingecko API error: {} - {}", response.statusCode(), response.statusMessage());
+                throw new ExternalApiException("Coingecko API error: " + response.statusMessage());
             }
 
             final var dto = response.data();
@@ -187,7 +145,11 @@ public class CoingeckoGatewayImpl implements CryptoProviderGateway, PlatformProv
 
             return Optional.of(platform);
 
-        } catch (final Exception e) {
+        } catch (PlatformNotFoundException e) {
+            log.error("Platform not found: {}", e.getMessage());
+            return Optional.empty();
+        }
+        catch (final Exception e) {
             log.error("Failed to fetch exchange: {}", exchangeId, e);
             throw new ExternalApiException("Failed to fetch exchange: " + exchangeId);
         }
@@ -207,14 +169,6 @@ public class CoingeckoGatewayImpl implements CryptoProviderGateway, PlatformProv
                 .build();
 
             final var response = httpClient.get(request);
-
-            if (response.isRateLimitError()) {
-                throw new CoingeckoRateLimitException();
-            }
-
-            if (response.isUnauthorized()) {
-                throw new CoingeckoUnauthorizedException();
-            }
 
             if (response.isError() || response.data() == null) {
                 log.error("Failed to fetch exchanges list");

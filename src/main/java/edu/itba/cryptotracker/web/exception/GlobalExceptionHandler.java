@@ -137,56 +137,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
     }
 
-    // ============= Coingecko Exceptions ====================
-
-    @ExceptionHandler(CoingeckoRateLimitException.class)
-    public ResponseEntity<ErrorResponse> handleRateLimit(
-        CoingeckoRateLimitException ex,
-        HttpServletRequest request) {
-        log.warn("Coingecko rate limit: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
-            .status(HttpStatus.TOO_MANY_REQUESTS.value())
-            .error("Too Many Requests")
-            .message(ex.getMessage())
-            .build();
-
-        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(error);
-    }
-
-    @ExceptionHandler(CoingeckoNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleCoingeckoNotFound(
-        CoingeckoNotFoundException ex,
-        HttpServletRequest request) {
-        log.warn("Coingecko crypto not found: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
-            .status(HttpStatus.NOT_FOUND.value())
-            .error("Not Found")
-            .message(ex.getMessage())
-            .build();
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-    }
-
-    @ExceptionHandler(CoingeckoUnauthorizedException.class)
-    public ResponseEntity<ErrorResponse> handleCoingeckoUnauthorized(
-        CoingeckoUnauthorizedException ex,
-        HttpServletRequest request) {
-        log.error("Coingecko API key invalid: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
-            .status(HttpStatus.UNAUTHORIZED.value())
-            .error("Unauthorized")
-            .message(ex.getMessage())
-            .build();
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-    }
-
     // ============= Input Validation Exceptions =============
 
     @ExceptionHandler(IllegalArgumentException.class)

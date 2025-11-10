@@ -61,7 +61,7 @@ public class CryptoController {
         @ApiResponse(responseCode = "404", description = "Crypto not found"),
         @ApiResponse(responseCode = "503", description = "External API unavailable")
     })
-    @GetMapping
+    @GetMapping("/{coingeckoId}")
     public ResponseEntity<CryptoResponseDTO> getCryptoById(
         @PathVariable String coingeckoId) {
         log.info("GET /api/cryptos/{}", coingeckoId);

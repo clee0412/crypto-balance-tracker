@@ -2,6 +2,7 @@ package edu.itba.cryptotracker.application.usecase.crypto;
 
 import edu.itba.cryptotracker.domain.entity.crypto.Crypto;
 import edu.itba.cryptotracker.domain.exception.ExternalApiException;
+import edu.itba.cryptotracker.domain.exception.PlatformNotFoundException;
 import edu.itba.cryptotracker.domain.usecase.crypto.CryptoQueryUseCase;
 import edu.itba.cryptotracker.domain.gateway.CryptoRepositoryGateway;
 import edu.itba.cryptotracker.domain.gateway.CryptoProviderGateway;
@@ -65,8 +66,11 @@ public class CryptoQueryUseCaseImpl implements CryptoQueryUseCase {
                         crypto.getName(), crypto.getSymbol());
                     return crypto;
                 });
-        } catch (ExternalApiException e) {
+        } catch (PlatformNotFoundException e) {
             log.error("Failed to fetch crypto {}: {}", coingeckoId, e.getMessage());
+            return Optional.empty();
+        } catch (ExternalApiException e) {
+            log.error("External API Exception {}: {}", coingeckoId, e.getMessage());
             return Optional.empty();
         }
     }
