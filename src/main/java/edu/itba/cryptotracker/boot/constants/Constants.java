@@ -11,6 +11,8 @@ public final class Constants {
     public static final String CRYPTOS_ENDPOINT = API_V1 + "/cryptos";
     public static final String PLATFORMS_ENDPOINT = API_V1 + "/platforms";
     public static final String USER_CRYPTOS_ENDPOINT = API_V1 + "/user-cryptos";
+    public static final String GOALS_ENDPOINT = API_V1 + "/goals";
+
 
     // ========== Validation Limits & Regexes ==========
 

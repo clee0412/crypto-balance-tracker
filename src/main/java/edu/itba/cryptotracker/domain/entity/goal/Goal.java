@@ -9,7 +9,7 @@ import java.util.UUID;
 
 @Getter
 @RequiredArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Goal {
 
