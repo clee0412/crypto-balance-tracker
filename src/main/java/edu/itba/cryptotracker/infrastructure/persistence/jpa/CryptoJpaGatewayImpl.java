@@ -1,6 +1,7 @@
 package edu.itba.cryptotracker.infrastructure.persistence.jpa;
 
 import edu.itba.cryptotracker.domain.entity.crypto.Crypto;
+import edu.itba.cryptotracker.domain.gateway.CryptoProviderGateway;
 import edu.itba.cryptotracker.domain.gateway.CryptoRepositoryGateway;
 import edu.itba.cryptotracker.infrastructure.persistence.jpa.mapper.CryptoJpaMapper;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CryptoJpaGatewayImpl implements CryptoRepositoryGateway {
     private final CryptoJpaRepository jpaRepository;
+    private final CryptoProviderGateway providerGateway;
     private final CryptoJpaMapper entityMapper;
 
     @Override
@@ -27,7 +29,12 @@ public class CryptoJpaGatewayImpl implements CryptoRepositoryGateway {
 
     @Override
     public Optional<Crypto> findById(String coingeckoId) {
-        return jpaRepository.findById(coingeckoId).map(entityMapper::toDomain);
+        return jpaRepository.findById(coingeckoId).map(entityMapper::toDomain)
+            .or(() -> {
+                Optional<Crypto> fetched = providerGateway.fetchCrypto(coingeckoId);
+                fetched.ifPresent(this::save);
+                return fetched;
+            });
     }
 
     @Override

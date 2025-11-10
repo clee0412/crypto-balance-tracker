@@ -25,7 +25,7 @@ public interface PlatformRepositoryGateway {
     /**
      * Finds a platform by its name.
      */
-    Optional<Platform> findByName(String name);
+//    Optional<Platform> findByName(String name);
 
     /**
      * Finds all platforms by their IDs.

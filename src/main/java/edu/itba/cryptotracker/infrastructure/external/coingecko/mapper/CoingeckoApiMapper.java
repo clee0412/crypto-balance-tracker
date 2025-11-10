@@ -1,6 +1,8 @@
 package edu.itba.cryptotracker.infrastructure.external.coingecko.mapper;
 
+import edu.itba.cryptotracker.domain.entity.platform.Platform;
 import edu.itba.cryptotracker.infrastructure.external.coingecko.dto.CoingeckoCryptoInfoDTO;
+import edu.itba.cryptotracker.infrastructure.external.coingecko.dto.CoingeckoPlatformDTO;
 import edu.itba.cryptotracker.infrastructure.external.coingecko.dto.CoingeckoPricesDTO;
 import edu.itba.cryptotracker.domain.entity.crypto.Crypto;
 import edu.itba.cryptotracker.domain.entity.crypto.LastKnownPrices;
@@ -51,15 +53,6 @@ public class CoingeckoApiMapper {
         );
     }
 
-    /**
-     * Extrae un precio del Map de Coingecko y lo convierte a BigDecimal.
-     * Maneja diferentes tipos que puede retornar la API:
-     * - Number (Integer, Double, Long)
-     * - String
-     * - null
-     * No lanza exceptions, retorna ZERO si falla (resilience)
-     **/
-
     private BigDecimal extractPrice(Map<String, Object> pricesMap, String currency) {
         final var priceValue = pricesMap.get(currency);
 
@@ -72,5 +65,12 @@ public class CoingeckoApiMapper {
         }
 
         return new BigDecimal(priceValue.toString());
+    }
+
+    public Platform toPlatform(CoingeckoPlatformDTO dto) {
+        return Platform.reconstitute(
+            dto.getId(),
+            dto.getName()
+        );
     }
 }

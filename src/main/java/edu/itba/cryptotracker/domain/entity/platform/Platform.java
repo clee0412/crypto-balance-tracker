@@ -15,36 +15,17 @@ import java.util.UUID;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Platform {
     @EqualsAndHashCode.Include
-    @NonNull
-    private final String id;  // UUID string
+    private final String id;
 
     private final String name;  // Platform name (e.g., "BINANCE", "COINBASE")
+//    private final String url;
+//    private final boolean centralized;
 
-    /**
-     * Factory method to create a new Platform with generated ID.
-     * Validates that name is not null.
-     */
-    public static Platform create(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Platform name cannot be null or blank");
-        }
-        return new Platform(
-            UUID.randomUUID().toString(),
-            name.toUpperCase()  // Normalize platform name to uppercase
-        );
-    }
-
-    /**
-     * Factory method to reconstitute Platform from persistence.
-     */
-    public static Platform reconstitute(String id, String name) {
+    public static Platform create(String id, String name) {
         return new Platform(id, name);
     }
 
-    /**
-     * Business method to check if platform name is valid.
-     */
-    public boolean hasValidName() {
-        return name != null && !name.trim().isEmpty();
+    public static Platform reconstitute(String id, String name) {
+        return new Platform(id, name);
     }
 }

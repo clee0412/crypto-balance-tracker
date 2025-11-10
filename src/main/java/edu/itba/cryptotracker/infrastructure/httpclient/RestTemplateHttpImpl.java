@@ -1,4 +1,3 @@
-// adapter/httpclient/RestTemplateHttpClient.java
 package edu.itba.cryptotracker.infrastructure.httpclient;
 
 import edu.itba.cryptotracker.infrastructure.httpclient.dto.HttpRequest;
@@ -40,7 +39,6 @@ public class RestTemplateHttpImpl implements HttpClient {
 
         final var headers = createHeaders(request.headers());
         final var requestEntity = new HttpEntity<>(headers);
-
         final var url = buildUrl(request.endpoint(), request.params());
 
         try {
@@ -55,6 +53,7 @@ public class RestTemplateHttpImpl implements HttpClient {
                 log.error("HTTP error {} calling {}", responseEntity.getStatusCode(), url);
                 return HttpResponse.error(
                     request.onError(),
+                    responseEntity.getStatusCode().value(),
                     responseEntity.getStatusCode().toString()
                 );
             }
@@ -67,7 +66,11 @@ public class RestTemplateHttpImpl implements HttpClient {
 
         } catch (final RestClientResponseException e) {
             log.error("Error calling {}: {}", url, e.getMessage());
-            return HttpResponse.error(request.onError(), e.getMessage());
+            return HttpResponse.error(
+                request.onError(),
+                e.getStatusCode().value(),
+                e.getMessage()
+            );
         }
     }
 

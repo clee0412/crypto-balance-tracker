@@ -2,27 +2,17 @@ package edu.itba.cryptotracker.infrastructure.persistence.jpa.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 @Entity
-@Table(
-    name = "platforms",
-    indexes = {
-        @Index(name = "idx_platform_name", columnList = "name", unique = true)
-    }
-)
-@Getter
-@Setter
+@Table(name = "platforms")
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class PlatformEntity {
 
     @Id
-    @EqualsAndHashCode.Include
-    @Column(name = "id", length = 36)
+    @Column(name = "id", nullable = false, length = 100)
     private String id;
 
-    @Column(name = "name", nullable = false, unique = true, length = 50)
+    @Column(name = "name", nullable = false)
     private String name;
 }

@@ -5,8 +5,8 @@ import org.springframework.http.HttpStatus;
 
 @Builder
 public record HttpResponse<T>(T data, int statusCode, String statusMessage) {
-    public static <T> HttpResponse<T> error(final T data, final String message) {
-        return new HttpResponse<>(data, HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
+    public static <T> HttpResponse<T> error(T data, int statusCode, String message) {
+        return new HttpResponse<>(data, statusCode, message);
     }
 
     /**
@@ -18,13 +18,21 @@ public record HttpResponse<T>(T data, int statusCode, String statusMessage) {
         return statusCode >= 400;
     }
 
-    /**
-     * Verifica si la respuesta es exitosa.
-     *
-     * @return true si statusCode 2xx
-     */
-    public boolean isSuccess() {
-        return statusCode >= 200 && statusCode < 300;
+    public boolean isRateLimitError() {
+        return statusCode == 429;
+    }
+
+    public boolean isUnauthorized() {
+        return statusCode == 401 || statusCode == 10002 ||
+            statusCode == 10010 || statusCode == 10011;
+    }
+
+    public boolean isNotFound() {
+        return statusCode == 404;
+    }
+
+    public boolean isBadRequest() {
+        return statusCode == 400;
     }
 }
 

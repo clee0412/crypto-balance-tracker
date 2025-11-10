@@ -1,6 +1,7 @@
 package edu.itba.cryptotracker.application.usecase.platform;
 
 import edu.itba.cryptotracker.domain.entity.platform.Platform;
+import edu.itba.cryptotracker.domain.gateway.PlatformProviderGateway;
 import edu.itba.cryptotracker.domain.usecase.platform.GetAllPlatformsUseCase;
 import edu.itba.cryptotracker.domain.gateway.PlatformRepositoryGateway;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +16,12 @@ import java.util.List;
 public class GetAllPlatformsUseCaseImpl implements GetAllPlatformsUseCase {
 
     private final PlatformRepositoryGateway platformRepository;
-
+    private final PlatformProviderGateway platformProviderGateway;
     @Override
     public List<Platform> getAllPlatforms() {
-        log.debug("Retrieving all platforms");
-        return platformRepository.findAll();
+        return platformProviderGateway.fetchAllExchangesList();
+
+//        log.debug("Retrieving all platforms");
+//        return platformRepository.findAll();
     }
 }
