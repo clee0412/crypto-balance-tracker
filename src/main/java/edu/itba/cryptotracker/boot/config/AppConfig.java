@@ -1,6 +1,6 @@
 package edu.itba.cryptotracker.boot.config;
 
-import edu.itba.cryptotracker.adapter.gateway.external.coingecko.config.CoingeckoApiConfig;
+import edu.itba.cryptotracker.infrastructure.external.coingecko.config.CoingeckoApiConfig;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

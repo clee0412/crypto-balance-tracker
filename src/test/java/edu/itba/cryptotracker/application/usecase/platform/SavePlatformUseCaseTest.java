@@ -2,7 +2,7 @@ package edu.itba.cryptotracker.application.usecase.platform;
 
 import edu.itba.cryptotracker.domain.entity.platform.Platform;
 import edu.itba.cryptotracker.domain.exception.DuplicatedPlatformException;
-import edu.itba.cryptotracker.domain.persistence.PlatformRepositoryPort;
+import edu.itba.cryptotracker.domain.gateway.PlatformRepositoryGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,13 +17,13 @@ import static org.mockito.Mockito.*;
 class SavePlatformUseCaseTest {
 
     @Mock
-    private PlatformRepositoryPort platformRepository;
+    private PlatformRepositoryGateway platformRepository;
 
-    private SavePlatformUseCase useCase;
+    private SavePlatformUseCaseImpl useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new SavePlatformUseCase(platformRepository);
+        useCase = new SavePlatformUseCaseImpl(platformRepository);
     }
 
     @Test
@@ -31,7 +31,7 @@ class SavePlatformUseCaseTest {
         // Given
         String platformName = "binance";
         Platform expectedPlatform = Platform.create(platformName);
-        
+
         when(platformRepository.existsByName("BINANCE")).thenReturn(false);
         when(platformRepository.save(any(Platform.class))).thenReturn(expectedPlatform);
 
@@ -41,7 +41,7 @@ class SavePlatformUseCaseTest {
         // Then
         assertThat(result).isNotNull();
         assertThat(result.getName()).isEqualTo("BINANCE");
-        
+
         verify(platformRepository).existsByName("BINANCE");
         verify(platformRepository).save(any(Platform.class));
     }
@@ -50,14 +50,14 @@ class SavePlatformUseCaseTest {
     void shouldThrowExceptionWhenPlatformAlreadyExists() {
         // Given
         String platformName = "binance";
-        
+
         when(platformRepository.existsByName("BINANCE")).thenReturn(true);
 
         // When & Then
         assertThatThrownBy(() -> useCase.savePlatform(platformName))
                 .isInstanceOf(DuplicatedPlatformException.class)
                 .hasMessage("Platform already exists with name: BINANCE");
-        
+
         verify(platformRepository).existsByName("BINANCE");
         verify(platformRepository, never()).save(any(Platform.class));
     }
@@ -66,14 +66,14 @@ class SavePlatformUseCaseTest {
     void shouldNormalizePlatformNameBeforeChecking() {
         // Given
         String platformName = "BiNaNcE";
-        
+
         when(platformRepository.existsByName("BINANCE")).thenReturn(true);
 
         // When & Then
         assertThatThrownBy(() -> useCase.savePlatform(platformName))
                 .isInstanceOf(DuplicatedPlatformException.class)
                 .hasMessage("Platform already exists with name: BINANCE");
-        
+
         verify(platformRepository).existsByName("BINANCE");
     }
 }

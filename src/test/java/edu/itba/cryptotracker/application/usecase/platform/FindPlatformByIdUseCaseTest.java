@@ -2,7 +2,7 @@ package edu.itba.cryptotracker.application.usecase.platform;
 
 import edu.itba.cryptotracker.domain.entity.platform.Platform;
 import edu.itba.cryptotracker.domain.exception.PlatformNotFoundException;
-import edu.itba.cryptotracker.domain.persistence.PlatformRepositoryPort;
+import edu.itba.cryptotracker.domain.gateway.PlatformRepositoryGateway;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,13 +18,13 @@ import static org.mockito.Mockito.*;
 class FindPlatformByIdUseCaseTest {
 
     @Mock
-    private PlatformRepositoryPort platformRepository;
+    private PlatformRepositoryGateway platformRepository;
 
-    private FindPlatformByIdUseCase useCase;
+    private FindPlatformByIdUseCaseImpl useCase;
 
     @BeforeEach
     void setUp() {
-        useCase = new FindPlatformByIdUseCase(platformRepository);
+        useCase = new FindPlatformByIdUseCaseImpl(platformRepository);
     }
 
     @Test
@@ -32,7 +32,7 @@ class FindPlatformByIdUseCaseTest {
         // Given
         String platformId = "123e4567-e89b-12d3-a456-426614174000";
         Platform expectedPlatform = Platform.reconstitute(platformId, "BINANCE");
-        
+
         when(platformRepository.findById(platformId)).thenReturn(Optional.of(expectedPlatform));
 
         // When
@@ -42,7 +42,7 @@ class FindPlatformByIdUseCaseTest {
         assertThat(result).isNotNull();
         assertThat(result.getId()).isEqualTo(platformId);
         assertThat(result.getName()).isEqualTo("BINANCE");
-        
+
         verify(platformRepository).findById(platformId);
     }
 
@@ -50,14 +50,14 @@ class FindPlatformByIdUseCaseTest {
     void shouldThrowExceptionWhenPlatformNotFound() {
         // Given
         String platformId = "123e4567-e89b-12d3-a456-426614174000";
-        
+
         when(platformRepository.findById(platformId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThatThrownBy(() -> useCase.findById(platformId))
                 .isInstanceOf(PlatformNotFoundException.class)
                 .hasMessage("Platform not found with id: " + platformId);
-        
+
         verify(platformRepository).findById(platformId);
     }
 }

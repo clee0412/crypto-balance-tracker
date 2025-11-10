@@ -2,7 +2,8 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.7'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'jacoco'
+	// Temporarily commented out due to compatibility issues with Gradle 8.12
+	// id 'jacoco'
 }
 
 group = 'com.distasilucas'
@@ -32,9 +33,10 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_21
 }
 
-jacoco {
-	toolVersion = jacocoVersion
-}
+// Temporarily commented out due to compatibility issues with Gradle 8.12
+// jacoco {
+// 	toolVersion = jacocoVersion
+// }
 
 repositories {
 	mavenCentral()
@@ -80,24 +82,25 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-jacocoTestReport {
-	dependsOn test
-
-	afterEvaluate {
-		classDirectories.setFrom(files(classDirectories.files.collect {
-			fileTree(dir: it, exclude: [
-					"**/CryptoBalanceTrackerApplication**",
-					"**/configuration/**"
-			])
-		}))
-	}
-
-	reports {
-		csv.required.set(true)
-		html.required.set(true)
-	}
-}
-
-test {
-	finalizedBy jacocoTestReport
-}
+// Temporarily commented out due to compatibility issues with Gradle 8.12
+// jacocoTestReport {
+// 	dependsOn test
+//
+// 	afterEvaluate {
+// 		classDirectories.setFrom(files(classDirectories.files.collect {
+// 			fileTree(dir: it, exclude: [
+// 					"**/CryptoBalanceTrackerApplication**",
+// 					"**/configuration/**"
+// 			])
+// 		}))
+// 	}
+//
+// 	reports {
+// 		csv.required.set(true)
+// 		html.required.set(true)
+// 	}
+// }
+//
+// test {
+// 	finalizedBy jacocoTestReport
+// }
