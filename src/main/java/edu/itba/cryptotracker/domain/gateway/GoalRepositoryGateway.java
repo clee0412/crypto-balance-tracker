@@ -1,4 +1,4 @@
-package edu.itba.cryptotracker.domain.persistence;
+package edu.itba.cryptotracker.domain.gateway;
 
 import edu.itba.cryptotracker.domain.entity.goal.Goal;
 
@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public interface GoalRepositoryPort {
+public interface GoalRepositoryGateway {
 
     Goal save(Goal goal);
 

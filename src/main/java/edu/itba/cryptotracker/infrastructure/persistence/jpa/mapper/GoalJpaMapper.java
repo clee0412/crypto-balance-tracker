@@ -1,9 +1,10 @@
-package edu.itba.cryptotracker.adapter.output.persistence.jpa.mapper;
+package edu.itba.cryptotracker.infrastructure.persistence.jpa.mapper;
 
-import edu.itba.cryptotracker.adapter.output.persistence.jpa.entity.GoalEntity;
-import edu.itba.cryptotracker.adapter.output.persistence.jpa.entity.CryptoEntity;
 import edu.itba.cryptotracker.domain.entity.goal.Goal;
 import edu.itba.cryptotracker.domain.entity.crypto.Crypto;
+import edu.itba.cryptotracker.infrastructure.persistence.jpa.entity.CryptoEntity;
+import edu.itba.cryptotracker.infrastructure.persistence.jpa.entity.GoalEntity;
+import edu.itba.cryptotracker.infrastructure.persistence.jpa.mapper.CryptoJpaMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

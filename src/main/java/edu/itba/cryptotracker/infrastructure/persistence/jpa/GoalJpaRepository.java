@@ -1,6 +1,7 @@
-package edu.itba.cryptotracker.adapter.output.persistence.jpa;
+package edu.itba.cryptotracker.infrastructure.persistence.jpa;
 
-import edu.itba.cryptotracker.adapter.output.persistence.jpa.entity.GoalEntity;
+
+import edu.itba.cryptotracker.infrastructure.persistence.jpa.entity.GoalEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

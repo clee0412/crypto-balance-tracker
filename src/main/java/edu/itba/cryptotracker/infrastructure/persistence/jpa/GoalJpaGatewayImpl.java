@@ -1,10 +1,9 @@
-package edu.itba.cryptotracker.adapter.output.persistence.jpa;
+package edu.itba.cryptotracker.infrastructure.persistence.jpa;
 
-import edu.itba.cryptotracker.adapter.output.persistence.jpa.mapper.GoalJpaMapper;
 import edu.itba.cryptotracker.domain.entity.goal.Goal;
-import edu.itba.cryptotracker.domain.persistence.GoalRepositoryPort;
+import edu.itba.cryptotracker.domain.gateway.GoalRepositoryGateway;
+import edu.itba.cryptotracker.infrastructure.persistence.jpa.mapper.GoalJpaMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class GoalJpaAdapter implements GoalRepositoryPort {
+public class GoalJpaGatewayImpl implements GoalRepositoryGateway {
 
     private final GoalJpaRepository jpaRepository;
     private final GoalJpaMapper entityMapper;

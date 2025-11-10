@@ -1,4 +1,4 @@
-package edu.itba.cryptotracker.adapter.output.persistence.jpa.entity;
+package edu.itba.cryptotracker.infrastructure.persistence.jpa.entity;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -1,8 +1,8 @@
-package edu.itba.cryptotracker.adapter.input.rest.goal.mapper;
+package edu.itba.cryptotracker.web.presenter.goal;
 
-import edu.itba.cryptotracker.adapter.input.rest.goal.dto.GoalResponseDTO;
+import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
+import edu.itba.cryptotracker.web.dto.goal.GoalResponseDTO;
 import edu.itba.cryptotracker.domain.entity.goal.Goal;
-import edu.itba.cryptotracker.domain.persistence.UserCryptoReadPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,11 +12,11 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class GoalRestMapper {
 
-    private final UserCryptoReadPort userCryptoReadPort;
+    private final UserCryptoRepositoryGateway repositoryGateway;
 
     public GoalResponseDTO toResponse(final Goal goal) {
         final String cryptoId = goal.getCrypto().getId();
-        final BigDecimal actual = userCryptoReadPort.sumQuantityByCrypto(cryptoId);
+        final BigDecimal actual = repositoryGateway.sumQuantityByCrypto(cryptoId);
 
         final float progress = goal.getProgress(actual);
         final BigDecimal remaining = goal.getRemainingQuantity(actual);

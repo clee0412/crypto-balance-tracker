@@ -54,7 +54,7 @@ public class CoingeckoGatewayImpl implements CryptoProviderGateway, PlatformProv
 
         } catch (final Exception e) {
             log.error("Failed to fetch crypto: {}", coingeckoId, e);
-            throw new ExternalApiException("Failed to fetch: " + coingeckoId);
+            throw new CryptoNotFoundException("Failed to fetch: " + coingeckoId);
         }
     }
 
@@ -72,7 +72,7 @@ public class CoingeckoGatewayImpl implements CryptoProviderGateway, PlatformProv
         final var response = httpClient.get(request);
         if (response.isError()) {
             log.error("Coingecko API error: {} - {}", response.statusCode(), response.statusMessage());
-            throw new ExternalApiException("Coingecko API error: " + response.statusMessage());
+            throw new CryptoNotFoundException("Coingecko API error: " + response.statusMessage());
         }
 
         return response.data();
@@ -129,7 +129,7 @@ public class CoingeckoGatewayImpl implements CryptoProviderGateway, PlatformProv
             final var response = httpClient.get(request);
             if (response.isError()) {
                 log.error("Coingecko API error: {} - {}", response.statusCode(), response.statusMessage());
-                throw new ExternalApiException("Coingecko API error: " + response.statusMessage());
+                throw new PlatformNotFoundException("Coingecko API error: " + response.statusMessage());
             }
 
             final var dto = response.data();

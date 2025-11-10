@@ -1,4 +1,4 @@
-package edu.itba.cryptotracker.adapter.input.rest.goal.dto;
+package edu.itba.cryptotracker.web.dto.goal;
 
 import java.math.BigDecimal;
 

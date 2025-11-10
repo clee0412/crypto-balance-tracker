@@ -1,7 +1,7 @@
 package edu.itba.cryptotracker.application.usecase.goal;
 
-import edu.itba.cryptotracker.domain.persistence.GoalRepositoryPort;
-import edu.itba.cryptotracker.domain.usecases.DeleteGoalUseCasePort;
+import edu.itba.cryptotracker.domain.gateway.GoalRepositoryGateway;
+import edu.itba.cryptotracker.domain.usecase.goal.DeleteGoalUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,9 +9,9 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class DeleteGoalUseCase implements DeleteGoalUseCasePort {
+public class DeleteGoalUseCaseImpl implements DeleteGoalUseCase {
 
-    private final GoalRepositoryPort goalRepo;
+    private final GoalRepositoryGateway goalRepo;
 
     @Override
     public boolean execute(final String goalId) {

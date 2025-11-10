@@ -1,15 +1,10 @@
-package edu.itba.cryptotracker.adapter.input.rest.goal;
+package edu.itba.cryptotracker.web.controller;
 
-import edu.itba.cryptotracker.adapter.input.rest.goal.dto.GoalRequestDTO;
-import edu.itba.cryptotracker.adapter.input.rest.goal.dto.UpdateGoalRequestDTO;
-import edu.itba.cryptotracker.adapter.input.rest.goal.dto.GoalResponseDTO;
-import edu.itba.cryptotracker.adapter.input.rest.goal.mapper.GoalRestMapper;
-import edu.itba.cryptotracker.boot.constants.Constants;
-import edu.itba.cryptotracker.domain.usecases.CreateGoalUseCasePort;
-import edu.itba.cryptotracker.domain.usecases.DeleteGoalUseCasePort;
-import edu.itba.cryptotracker.domain.usecases.ListGoalsUseCasePort;
-import edu.itba.cryptotracker.domain.usecases.RetrieveGoalUseCasePort;
-import edu.itba.cryptotracker.domain.usecases.UpdateGoalUseCasePort;
+import edu.itba.cryptotracker.domain.usecase.goal.*;
+import edu.itba.cryptotracker.web.dto.goal.GoalRequestDTO;
+import edu.itba.cryptotracker.web.dto.goal.UpdateGoalRequestDTO;
+import edu.itba.cryptotracker.web.dto.goal.GoalResponseDTO;
+import edu.itba.cryptotracker.web.presenter.goal.GoalRestMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,16 +16,16 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(Constants.GOALS_ENDPOINT)
+@RequestMapping("/api/v1/goals")
 @RequiredArgsConstructor
 @Validated
 public class GoalController {
 
-    private final CreateGoalUseCasePort createGoalUC;
-    private final UpdateGoalUseCasePort updateGoalUC;
-    private final DeleteGoalUseCasePort deleteGoalUC;
-    private final RetrieveGoalUseCasePort retrieveGoalUC;
-    private final ListGoalsUseCasePort listGoalsUC;
+    private final CreateGoalUseCase createGoalUC;
+    private final UpdateGoalUseCase updateGoalUC;
+    private final DeleteGoalUseCase deleteGoalUC;
+    private final RetrieveGoalUseCase retrieveGoalUC;
+    private final ListGoalsUseCase listGoalsUC;
 
     private final GoalRestMapper mapper;
 
@@ -39,7 +34,7 @@ public class GoalController {
      */
     @GetMapping
     public ResponseEntity<List<GoalResponseDTO>> listGoals() {
-        log.info("GET {}", Constants.GOALS_ENDPOINT);
+        log.info("GET {}", "/goals");
         final var goals = listGoalsUC.execute();
         final var response = goals.stream().map(mapper::toResponse).toList();
         return ResponseEntity.ok(response);
@@ -50,7 +45,7 @@ public class GoalController {
      */
     @GetMapping("/{goalId}")
     public ResponseEntity<GoalResponseDTO> getGoal(@PathVariable final String goalId) {
-        log.info("GET {}/{}", Constants.GOALS_ENDPOINT, goalId);
+        log.info("GET /goals/{}", goalId);
         return retrieveGoalUC.execute(goalId)
             .map(mapper::toResponse)
             .map(ResponseEntity::ok)
@@ -62,7 +57,7 @@ public class GoalController {
      */
     @PostMapping
     public ResponseEntity<?> createGoal(@Valid @RequestBody final GoalRequestDTO body) {
-        log.info("POST {}: cryptoId={}, qty={}", Constants.GOALS_ENDPOINT, body.cryptoId(), body.goalQuantity());
+        log.info("POST /goals: cryptoId={}, qty={}", body.cryptoId(), body.goalQuantity());
         return createGoalUC.execute(body.cryptoId(), body.goalQuantity())
             .map(goal -> ResponseEntity.status(201).body(mapper.toResponse(goal)))
             // No tiramos excepciones: si falla (duplicado/crypto inexistente/entrada inválida), devolvemos 400.
@@ -75,7 +70,7 @@ public class GoalController {
     @PatchMapping("/{goalId}")
     public ResponseEntity<?> updateGoal(@PathVariable final String goalId,
                                         @Valid @RequestBody final UpdateGoalRequestDTO body) {
-        log.info("PATCH {}/{}: newQty={}", Constants.GOALS_ENDPOINT, goalId, body.goalQuantity());
+        log.info("PATCH /goals/{}: newQty={}", goalId, body.goalQuantity());
         return updateGoalUC.execute(goalId, body.goalQuantity())
             .map(goal -> ResponseEntity.ok(mapper.toResponse(goal)))
             .orElseGet(() -> ResponseEntity.notFound().build());
@@ -86,7 +81,7 @@ public class GoalController {
      */
     @DeleteMapping("/{goalId}")
     public ResponseEntity<Void> deleteGoal(@PathVariable final String goalId) {
-        log.info("DELETE {}/{}", Constants.GOALS_ENDPOINT, goalId);
+        log.info("DELETE /goals/{}", goalId);
         final boolean deleted = deleteGoalUC.execute(goalId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }

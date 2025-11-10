@@ -1,9 +1,9 @@
 package edu.itba.cryptotracker.application.usecase.goal;
 
 import edu.itba.cryptotracker.domain.entity.goal.Goal;
-import edu.itba.cryptotracker.domain.persistence.CryptoRepositoryPort;
-import edu.itba.cryptotracker.domain.persistence.GoalRepositoryPort;
-import edu.itba.cryptotracker.domain.usecases.CreateGoalUseCasePort;
+import edu.itba.cryptotracker.domain.gateway.CryptoRepositoryGateway;
+import edu.itba.cryptotracker.domain.gateway.GoalRepositoryGateway;
+import edu.itba.cryptotracker.domain.usecase.goal.CreateGoalUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,10 +14,10 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class CreateGoalUseCase implements CreateGoalUseCasePort {
+public class CreateGoalUseCaseImpl implements CreateGoalUseCase {
 
-    private final GoalRepositoryPort goalRepo;
-    private final CryptoRepositoryPort cryptoRepo;
+    private final GoalRepositoryGateway goalRepo;
+    private final CryptoRepositoryGateway cryptoRepo;
 
     @Override
     public Optional<Goal> execute(final String cryptoId, final BigDecimal goalQty) {

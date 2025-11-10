@@ -7,6 +7,7 @@ import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -86,5 +87,13 @@ public class UserCryptoJpaGatewayImpl implements UserCryptoRepositoryGateway {
             .map(mapper::toEntity)
             .toList();
         jpaRepository.deleteAll(entities);
+    }
+
+    @Override
+    public BigDecimal sumQuantityByCrypto(final String cryptoId) {
+        if (cryptoId == null || cryptoId.isBlank()) {
+            return BigDecimal.ZERO;
+        }
+        return jpaRepository.sumQuantityByCrypto(cryptoId);
     }
 }
