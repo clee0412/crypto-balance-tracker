@@ -37,4 +37,10 @@ public interface UserCryptoJpaRepository extends JpaRepository<UserCryptoEntity,
         String cryptoId,
         String platformId
     );
+    @Query("""
+        SELECT COALESCE(SUM(u.quantity), 0)
+        FROM UserCryptoEntity u
+        WHERE LOWER(u.cryptoId) = LOWER(:cryptoId)
+    """)
+    BigDecimal sumQuantityByCrypto(@Param("cryptoId") String cryptoId);
 }
