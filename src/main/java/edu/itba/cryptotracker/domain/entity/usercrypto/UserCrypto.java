@@ -1,59 +1,54 @@
 package edu.itba.cryptotracker.domain.entity.usercrypto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.UUID;
 
-@AllArgsConstructor
+@ToString
+@AllArgsConstructor(access = AccessLevel.PRIVATE) // => enforces calling of factory methods (create & reconstitute)
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UserCrypto {
-    private final String id;
-    private final String cryptoId;
-    private final String platformId;
-    private BigDecimal quantity;
 
-    public static UserCrypto create(String cryptoId, String platformId, BigDecimal quantity) {
-        return new UserCrypto(UUID.randomUUID().toString(), cryptoId, platformId, quantity);
+    @EqualsAndHashCode.Include
+    private final UUID id;
+    private final String userId;
+    private BigDecimal quantity; // can be updated hence not final -> should we make sure this is bigger than 0
+    private final String platformId;  // Reference to Platform aggregate
+    private final String cryptoId;    // Reference to Crypto aggregate (Coingecko ID)
+
+
+    // should this be enforcing fail-fast validation? or should we suppose that when it is being created, its already enforced in layers above?
+    // shouldn't i be presupposing that when this is called, the layer above had made sure it's passing the correct params?
+    public static UserCrypto create(String userId, BigDecimal quantity, String platformId, String cryptoId) {
+        return new UserCrypto(UUID.randomUUID(), userId, quantity.setScale(2, RoundingMode.HALF_UP), platformId, cryptoId);
+    }
+
+    // Factory method to reconstitute from persistence
+    public static UserCrypto reconstitute(UUID id, String userId, BigDecimal quantity,
+                                          String platformId, String cryptoId) {
+        return new UserCrypto(id, userId, quantity, platformId, cryptoId);
     }
 
     public void updateQuantity(BigDecimal newQuantity) {
-        if (newQuantity == null) {
-            throw new IllegalArgumentException("Quantity cannot be null");
-        }
-        if (newQuantity.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero");
-        }
-        this.quantity = newQuantity;
+        this.quantity = newQuantity.setScale(2, RoundingMode.HALF_UP);
     }
 
-    public void increaseQuantity(BigDecimal amount) {
-        if (amount == null) {
-            throw new IllegalArgumentException("Quantity cannot be null");
-        }
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero");
-        }
-        this.quantity = this.quantity.add(amount);
+    public void subtractQuantity(BigDecimal amountToSubtract) {
+        this.quantity = quantity.subtract(amountToSubtract).setScale(2, RoundingMode.HALF_UP);
     }
 
-    public void decreaseQuantity(BigDecimal amount) {
-        if (amount == null) {
-            throw new IllegalArgumentException("Quantity cannot be null");
-        }
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Quantity must be greater than zero");
-        }
-        this.quantity = this.quantity.subtract(amount);
+    public void addQuantity(BigDecimal amountToAdd) {
+        this.quantity = quantity.add(amountToAdd).setScale(2, RoundingMode.HALF_UP);
     }
 
-    public boolean hasQuantityOf(BigDecimal amount) {
-        return this.quantity.compareTo(amount) >= 0;
+    public boolean hasSufficientBalance(BigDecimal subtract) {
+        return quantity.compareTo(subtract) >= 0;
     }
 
-    public boolean belongsTo(String platformId) {
-        return this.platformId.equals(platformId);
+    public boolean isZeroBalance() {
+        return quantity.compareTo(BigDecimal.ZERO) == 0;
     }
-
 }

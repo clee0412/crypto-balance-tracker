@@ -17,5 +17,4 @@ public class LastKnownPrices {
     private final BigDecimal usdPrice; // or should we use a MoneyValue object instead?? or CryptoValue object
     private final BigDecimal eurPrice;
     private final BigDecimal btcPrice;
-
 }
