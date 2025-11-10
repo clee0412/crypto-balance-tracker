@@ -1,62 +1,48 @@
 package edu.itba.cryptotracker.domain.entity.platform;
 
-import java.util.Objects;
+import lombok.*;
+
+import java.util.UUID;
 
 /**
- * Platform Entity (Domain Model).
+ * Platform domain entity.
  * Represents a cryptocurrency exchange or wallet where crypto is stored.
  * Pure domain logic - NO JPA, NO Spring annotations.
  */
+@ToString
+@RequiredArgsConstructor
+@Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Platform {
-    private final PlatformId id;
-    private final PlatformName name;
+    @EqualsAndHashCode.Include
+    @NonNull
+    private final String id;  // UUID string
+    
+    @EqualsAndHashCode.Include
+    @NonNull
+    private final String name;  // Platform name (e.g., "BINANCE", "COINBASE")
 
-    private Platform(PlatformId id, PlatformName name) {
-        this.id = Objects.requireNonNull(id, "Platform ID cannot be null");
-        this.name = Objects.requireNonNull(name, "Platform name cannot be null");
+    /**
+     * Factory method to create a new Platform with generated ID.
+     */
+    public static Platform create(String name) {
+        return new Platform(
+            UUID.randomUUID().toString(),
+            name.toUpperCase()  // Normalize platform name to uppercase
+        );
     }
 
     /**
-     * Factory method to create a new Platform (generates new ID).
+     * Factory method to reconstitute Platform from persistence.
      */
-    public static Platform create(PlatformName name) {
-        return new Platform(PlatformId.generate(), name);
-    }
-
-    /**
-     * Factory method to reconstitute Platform from persistence (existing ID).
-     */
-    public static Platform reconstitute(PlatformId id, PlatformName name) {
+    public static Platform reconstitute(String id, String name) {
         return new Platform(id, name);
     }
 
-    // Getters
-    public PlatformId getId() {
-        return id;
-    }
-
-    public PlatformName getName() {
-        return name;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Platform platform = (Platform) o;
-        return id.equals(platform.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
-    }
-
-    @Override
-    public String toString() {
-        return "Platform{" +
-                "id=" + id +
-                ", name=" + name +
-                '}';
+    /**
+     * Business method to check if platform name is valid.
+     */
+    public boolean hasValidName() {
+        return name != null && !name.trim().isEmpty();
     }
 }
