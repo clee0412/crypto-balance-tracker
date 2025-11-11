@@ -19,7 +19,6 @@ public class UserCrypto {
     private final String platformId;  // Reference to Platform aggregate
     private final String cryptoId;    // Reference to Crypto aggregate (Coingecko ID)
 
-
     // should this be enforcing fail-fast validation? or should we suppose that when it is being created, its already enforced in layers above?
     // shouldn't i be presupposing that when this is called, the layer above had made sure it's passing the correct params?
     public static UserCrypto create(String userId, BigDecimal quantity, String platformId, String cryptoId) {
