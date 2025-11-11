@@ -139,8 +139,10 @@ class CryptoJpaGatewayImplTest {
 
         // Then
         assertThat(result, hasSize(2));
-        // Check the result contains both cryptos by their IDs since timestamps might differ
-        List<String> resultIds = result.stream().map(Crypto::getId).collect(java.util.stream.Collectors.toList());
+        // Check the result contains both cryptos by comparing IDs to avoid timestamp issues
+        List<String> resultIds = result.stream()
+                .map(Crypto::getId)
+                .collect(java.util.stream.Collectors.toList());
         assertThat(resultIds, containsInAnyOrder(crypto1.getId(), crypto2.getId()));
         
         verify(jpaRepository, times(1)).findAll();

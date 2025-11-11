@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
@@ -34,8 +33,8 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = UserCryptoController.class)
-@ContextConfiguration(classes = {UserCryptoController.class, UserCryptoRestMapper.class, TestConfig.class})
+@WebMvcTest(UserCryptoController.class)
+@Import({TestConfig.class, UserCryptoRestMapper.class})
 class UserCryptoControllerTest {
 
     @Autowired
@@ -44,19 +43,19 @@ class UserCryptoControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Autowired
     private UserCryptoQueryUseCase queryService;
 
-    @MockBean
+    @Autowired
     private CreateUserCryptoUseCase createUseCase;
 
-    @MockBean
+    @Autowired
     private UpdateUserCryptoUseCase updateUseCase;
 
-    @MockBean
+    @Autowired
     private DeleteUserCryptoUseCase deleteUseCase;
 
-    @MockBean
+    @Autowired
     private TransferCryptoBetweenPlatformsUseCase transferUseCase;
 
     @Test
