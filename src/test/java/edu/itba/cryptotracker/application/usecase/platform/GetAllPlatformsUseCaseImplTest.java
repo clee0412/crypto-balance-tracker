@@ -1,17 +1,20 @@
 package edu.itba.cryptotracker.application.usecase.platform;
 
 import edu.itba.cryptotracker.domain.entity.platform.Platform;
+import edu.itba.cryptotracker.domain.gateway.PlatformProviderGateway;
 import edu.itba.cryptotracker.domain.gateway.PlatformRepositoryGateway;
-import org.junit.jupiter.api.BeforeEach;
+import edu.itba.cryptotracker.util.TestDataFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Collections;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -20,62 +23,63 @@ class GetAllPlatformsUseCaseImplTest {
     @Mock
     private PlatformRepositoryGateway platformRepository;
 
-    private GetAllPlatformsUseCaseImpl interactor;
+    @Mock
+    private PlatformProviderGateway platformProviderGateway;
 
-    @BeforeEach
-    void setUp() {
-        interactor = new GetAllPlatformsUseCaseImpl(platformRepository);
+    @InjectMocks
+    private GetAllPlatformsUseCaseImpl getAllPlatformsUseCase;
+
+    @Test
+    @DisplayName("Should return all platforms from provider gateway")
+    void shouldReturnAllPlatformsFromProviderGateway() {
+        // Given
+        List<Platform> expectedPlatforms = List.of(
+                TestDataFactory.createBinancePlatform(),
+                TestDataFactory.createCoinbasePlatform(),
+                TestDataFactory.createCustomPlatform("kraken-id", "Kraken")
+        );
+
+        when(platformProviderGateway.fetchAllExchangesList()).thenReturn(expectedPlatforms);
+
+        // When
+        List<Platform> result = getAllPlatformsUseCase.getAllPlatforms();
+
+        // Then
+        assertThat(result, is(expectedPlatforms));
+        assertThat(result, hasSize(3));
+        verify(platformProviderGateway, times(1)).fetchAllExchangesList();
+        verify(platformRepository, never()).findAll(); // Current implementation doesn't use repository
     }
 
     @Test
-    void shouldReturnAllPlatforms() {
+    @DisplayName("Should handle empty list from provider gateway")
+    void shouldHandleEmptyListFromProviderGateway() {
         // Given
-        Platform platform1 = Platform.reconstitute("platform-1", "BINANCE");
-        Platform platform2 = Platform.reconstitute("platform-2", "COINBASE");
-        Platform platform3 = Platform.reconstitute("platform-3", "KRAKEN");
-
-        List<Platform> expectedPlatforms = List.of(platform1, platform2, platform3);
-
-        when(platformRepository.findAll()).thenReturn(expectedPlatforms);
+        List<Platform> emptyList = List.of();
+        when(platformProviderGateway.fetchAllExchangesList()).thenReturn(emptyList);
 
         // When
-        List<Platform> result = interactor.getAllPlatforms();
+        List<Platform> result = getAllPlatformsUseCase.getAllPlatforms();
 
         // Then
-        assertThat(result).hasSize(3);
-        assertThat(result).containsExactlyInAnyOrder(platform1, platform2, platform3);
-
-        verify(platformRepository).findAll();
+        assertThat(result, is(empty()));
+        verify(platformProviderGateway, times(1)).fetchAllExchangesList();
     }
 
     @Test
-    void shouldReturnEmptyListWhenNoPlatformsExist() {
+    @DisplayName("Should return single platform when only one available")
+    void shouldReturnSinglePlatformWhenOnlyOneAvailable() {
         // Given
-        when(platformRepository.findAll()).thenReturn(Collections.emptyList());
+        Platform singlePlatform = TestDataFactory.createBinancePlatform();
+        List<Platform> singlePlatformList = List.of(singlePlatform);
+        when(platformProviderGateway.fetchAllExchangesList()).thenReturn(singlePlatformList);
 
         // When
-        List<Platform> result = interactor.getAllPlatforms();
+        List<Platform> result = getAllPlatformsUseCase.getAllPlatforms();
 
         // Then
-        assertThat(result).isEmpty();
-
-        verify(platformRepository).findAll();
-    }
-
-    @Test
-    void shouldReturnSinglePlatformWhenOnlyOneExists() {
-        // Given
-        Platform platform = Platform.reconstitute("platform-1", "BINANCE");
-
-        when(platformRepository.findAll()).thenReturn(List.of(platform));
-
-        // When
-        List<Platform> result = interactor.getAllPlatforms();
-
-        // Then
-        assertThat(result).hasSize(1);
-        assertThat(result.get(0)).isEqualTo(platform);
-
-        verify(platformRepository).findAll();
+        assertThat(result, hasSize(1));
+        assertThat(result.get(0), is(singlePlatform));
+        verify(platformProviderGateway, times(1)).fetchAllExchangesList();
     }
 }

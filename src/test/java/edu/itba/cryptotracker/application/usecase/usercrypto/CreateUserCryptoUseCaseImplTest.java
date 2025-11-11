@@ -1,23 +1,29 @@
 package edu.itba.cryptotracker.application.usecase.usercrypto;
 
 import edu.itba.cryptotracker.domain.entity.crypto.Crypto;
-import edu.itba.cryptotracker.domain.entity.crypto.LastKnownPrices;
+import edu.itba.cryptotracker.domain.entity.platform.Platform;
 import edu.itba.cryptotracker.domain.entity.usercrypto.UserCrypto;
 import edu.itba.cryptotracker.domain.exception.CryptoNotFoundException;
+import edu.itba.cryptotracker.domain.exception.DuplicateUserCryptoException;
+import edu.itba.cryptotracker.domain.exception.PlatformNotFoundException;
 import edu.itba.cryptotracker.domain.gateway.CryptoRepositoryGateway;
-import edu.itba.cryptotracker.web.dto.usercrypto.CreateRequestDTO;
-import edu.itba.cryptotracker.domain.usecase.platform.FindPlatformByIdUseCase;
+import edu.itba.cryptotracker.domain.gateway.PlatformRepositoryGateway;
 import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
-import org.junit.jupiter.api.BeforeEach;
+import edu.itba.cryptotracker.domain.model.CreateCryptoRequestModel;
+import edu.itba.cryptotracker.util.TestDataFactory;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -31,242 +37,252 @@ class CreateUserCryptoUseCaseImplTest {
     private CryptoRepositoryGateway cryptoRepository;
 
     @Mock
-    private FindPlatformByIdUseCase findPlatformByIdUseCase;
+    private PlatformRepositoryGateway platformRepository;
 
-    private CreateUserCryptoUseCaseImpl interactor;
-
-    @BeforeEach
-    void setUp() {
-        interactor = new CreateUserCryptoUseCaseImpl(
-            userCryptoRepository,
-            cryptoRepository,
-            findPlatformByIdUseCase
-        );
-    }
-
-    private Crypto createBitcoinCrypto() {
-        LastKnownPrices prices = new LastKnownPrices(
-            new BigDecimal("50000"),
-            new BigDecimal("45000"),
-            BigDecimal.ONE
-        );
-        return Crypto.create("bitcoin", "BTC", "Bitcoin", "http://image.url", prices);
-    }
+    @InjectMocks
+    private CreateUserCryptoUseCaseImpl createUserCryptoUseCase;
 
     @Test
+    @DisplayName("Should create UserCrypto successfully")
     void shouldCreateUserCryptoSuccessfully() {
         // Given
-        CreateRequestDTO request = new CreateRequestDTO(
-            "user-123",
-            "bitcoin",
-            "platform-456",
-            new BigDecimal("10.5")
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "bitcoin",
+                "binance-id",
+                new BigDecimal("10.5")
         );
 
-        Crypto crypto = createBitcoinCrypto();
+        Crypto bitcoin = TestDataFactory.createBitcoin();
+        Platform binance = TestDataFactory.createBinancePlatform();
 
-        when(cryptoRepository.findById("BITCOIN")).thenReturn(Optional.of(crypto));
+        when(cryptoRepository.findById(request.cryptoId())).thenReturn(Optional.of(bitcoin));
+        when(platformRepository.findById(request.platformId())).thenReturn(Optional.of(binance));
         when(userCryptoRepository.findByUserIdAndCryptoIdAndPlatformId(
-            request.userId(),
-            crypto.getId(),
-            request.platformId()
-        )).thenReturn(Optional.empty());
+                request.userId(), request.cryptoId(), request.platformId()))
+                .thenReturn(Optional.empty());
 
         // When
-        UserCrypto result = interactor.execute(request);
+        UserCrypto result = createUserCryptoUseCase.execute(request);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getUserId()).isEqualTo("user-123");
-        assertThat(result.getCryptoId()).isEqualTo("bitcoin");
-        assertThat(result.getPlatformId()).isEqualTo("platform-456");
-        assertThat(result.getQuantity()).isEqualByComparingTo("10.50");
+        assertNotNull(result);
+        assertThat(result.getUserId(), is(request.userId()));
+        assertThat(result.getCryptoId(), is(request.cryptoId()));
+        assertThat(result.getPlatformId(), is(request.platformId()));
+        assertThat(result.getQuantity(), is(new BigDecimal("10.50"))); // Scaled to 2 decimal places
 
-        verify(cryptoRepository).findById("BITCOIN");
-        verify(userCryptoRepository).findByUserIdAndCryptoIdAndPlatformId(
-            request.userId(),
-            crypto.getId(),
-            request.platformId()
-        );
-        verify(userCryptoRepository).save(any(UserCrypto.class));
+        verify(cryptoRepository, times(1)).findById(request.cryptoId());
+        verify(platformRepository, times(1)).findById(request.platformId());
+        verify(userCryptoRepository, times(1)).findByUserIdAndCryptoIdAndPlatformId(
+                request.userId(), request.cryptoId(), request.platformId());
+        verify(userCryptoRepository, times(1)).save(any(UserCrypto.class));
     }
 
     @Test
-    void shouldNormalizeCryptoIdToUppercase() {
-        // Given
-        CreateRequestDTO request = new CreateRequestDTO(
-            "user-123",
-            "bitcoin",
-            "platform-456",
-            new BigDecimal("10")
-        );
-
-        Crypto crypto = createBitcoinCrypto();
-
-        when(cryptoRepository.findById("BITCOIN")).thenReturn(Optional.of(crypto));
-        when(userCryptoRepository.findByUserIdAndCryptoIdAndPlatformId(anyString(), anyString(), anyString()))
-            .thenReturn(Optional.empty());
-
-        // When
-        interactor.execute(request);
-
-        // Then
-        verify(cryptoRepository).findById("BITCOIN"); // Uppercase
-    }
-
-    @Test
+    @DisplayName("Should throw exception when quantity is zero")
     void shouldThrowExceptionWhenQuantityIsZero() {
         // Given
-        CreateRequestDTO request = new CreateRequestDTO(
-            "user-123",
-            "bitcoin",
-            "platform-456",
-            BigDecimal.ZERO
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "bitcoin",
+                "binance-id",
+                BigDecimal.ZERO
         );
 
-        // When & Then
-        assertThatThrownBy(() -> interactor.execute(request))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Quantity must be positive");
+        // When/Then
+        assertThrows(IllegalArgumentException.class, 
+                () -> createUserCryptoUseCase.execute(request));
 
-        verify(cryptoRepository, never()).findById(anyString());
-        verify(userCryptoRepository, never()).save(any(UserCrypto.class));
+        verify(cryptoRepository, never()).findById(any());
+        verify(platformRepository, never()).findById(any());
+        verify(userCryptoRepository, never()).save(any());
     }
 
     @Test
+    @DisplayName("Should throw exception when quantity is negative")
     void shouldThrowExceptionWhenQuantityIsNegative() {
         // Given
-        CreateRequestDTO request = new CreateRequestDTO(
-            "user-123",
-            "bitcoin",
-            "platform-456",
-            new BigDecimal("-10")
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "bitcoin",
+                "binance-id",
+                new BigDecimal("-5.0")
         );
 
-        // When & Then
-        assertThatThrownBy(() -> interactor.execute(request))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("Quantity must be positive");
+        // When/Then
+        assertThrows(IllegalArgumentException.class, 
+                () -> createUserCryptoUseCase.execute(request));
 
-        verify(cryptoRepository, never()).findById(anyString());
-        verify(userCryptoRepository, never()).save(any(UserCrypto.class));
+        verify(cryptoRepository, never()).findById(any());
+        verify(platformRepository, never()).findById(any());
+        verify(userCryptoRepository, never()).save(any());
     }
 
     @Test
-    void shouldThrowExceptionWhenCryptoNotFound() {
+    @DisplayName("Should throw CryptoNotFoundException when crypto does not exist")
+    void shouldThrowCryptoNotFoundExceptionWhenCryptoDoesNotExist() {
         // Given
-        CreateRequestDTO request = new CreateRequestDTO(
-            "user-123",
-            "unknown-crypto",
-            "platform-456",
-            new BigDecimal("10")
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "nonexistent-crypto",
+                "binance-id",
+                new BigDecimal("10.0")
         );
 
-        when(cryptoRepository.findById("UNKNOWN-CRYPTO")).thenReturn(Optional.empty());
+        when(cryptoRepository.findById(request.cryptoId())).thenReturn(Optional.empty());
 
-        // When & Then
-        assertThatThrownBy(() -> interactor.execute(request))
-            .isInstanceOf(CryptoNotFoundException.class)
-            .hasMessage("Crypto not found: unknown-crypto");
+        // When/Then
+        assertThrows(CryptoNotFoundException.class, 
+                () -> createUserCryptoUseCase.execute(request));
 
-        verify(cryptoRepository).findById("UNKNOWN-CRYPTO");
-        verify(userCryptoRepository, never()).save(any(UserCrypto.class));
+        verify(cryptoRepository, times(1)).findById(request.cryptoId());
+        verify(platformRepository, never()).findById(any());
+        verify(userCryptoRepository, never()).save(any());
     }
 
     @Test
-    void shouldThrowExceptionWhenUserCryptoAlreadyExists() {
+    @DisplayName("Should throw PlatformNotFoundException when platform does not exist")
+    void shouldThrowPlatformNotFoundExceptionWhenPlatformDoesNotExist() {
         // Given
-        CreateRequestDTO request = new CreateRequestDTO(
-            "user-123",
-            "bitcoin",
-            "platform-456",
-            new BigDecimal("10")
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "bitcoin",
+                "nonexistent-platform",
+                new BigDecimal("10.0")
         );
 
-        Crypto crypto = createBitcoinCrypto();
-        UserCrypto existingUserCrypto = UserCrypto.create(
-            "user-123",
-            new BigDecimal("5"),
-            "platform-456",
-            "bitcoin"
+        Crypto bitcoin = TestDataFactory.createBitcoin();
+
+        when(cryptoRepository.findById(request.cryptoId())).thenReturn(Optional.of(bitcoin));
+        when(platformRepository.findById(request.platformId())).thenReturn(Optional.empty());
+
+        // When/Then
+        assertThrows(PlatformNotFoundException.class, 
+                () -> createUserCryptoUseCase.execute(request));
+
+        verify(cryptoRepository, times(1)).findById(request.cryptoId());
+        verify(platformRepository, times(1)).findById(request.platformId());
+        verify(userCryptoRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Should throw DuplicateUserCryptoException when UserCrypto already exists")
+    void shouldThrowDuplicateUserCryptoExceptionWhenAlreadyExists() {
+        // Given
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "bitcoin",
+                "binance-id",
+                new BigDecimal("10.0")
         );
 
-        when(cryptoRepository.findById("BITCOIN")).thenReturn(Optional.of(crypto));
+        Crypto bitcoin = TestDataFactory.createBitcoin();
+        Platform binance = TestDataFactory.createBinancePlatform();
+        UserCrypto existingUserCrypto = TestDataFactory.createUserBitcoin(binance);
+
+        when(cryptoRepository.findById(request.cryptoId())).thenReturn(Optional.of(bitcoin));
+        when(platformRepository.findById(request.platformId())).thenReturn(Optional.of(binance));
         when(userCryptoRepository.findByUserIdAndCryptoIdAndPlatformId(
-            request.userId(),
-            crypto.getId(),
-            request.platformId()
-        )).thenReturn(Optional.of(existingUserCrypto));
+                request.userId(), request.cryptoId(), request.platformId()))
+                .thenReturn(Optional.of(existingUserCrypto));
 
-        // When & Then
-        assertThatThrownBy(() -> interactor.execute(request))
-            .isInstanceOf(DuplicateUserCryptoException.class)
-            .hasMessage("User crypto already exists: bitcoin for platform platform-456");
+        // When/Then
+        assertThrows(DuplicateUserCryptoException.class, 
+                () -> createUserCryptoUseCase.execute(request));
 
-        verify(cryptoRepository).findById("BITCOIN");
-        verify(userCryptoRepository).findByUserIdAndCryptoIdAndPlatformId(
-            request.userId(),
-            crypto.getId(),
-            request.platformId()
-        );
-        verify(userCryptoRepository, never()).save(any(UserCrypto.class));
+        verify(cryptoRepository, times(1)).findById(request.cryptoId());
+        verify(platformRepository, times(1)).findById(request.platformId());
+        verify(userCryptoRepository, times(1)).findByUserIdAndCryptoIdAndPlatformId(
+                request.userId(), request.cryptoId(), request.platformId());
+        verify(userCryptoRepository, never()).save(any());
     }
 
     @Test
-    void shouldAllowSameCryptoOnDifferentPlatforms() {
+    @DisplayName("Should handle very small quantities with proper scaling")
+    void shouldHandleVerySmallQuantitiesWithProperScaling() {
         // Given
-        CreateRequestDTO request = new CreateRequestDTO(
-            "user-123",
-            "bitcoin",
-            "platform-789",  // Different platform
-            new BigDecimal("10")
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "bitcoin",
+                "binance-id",
+                new BigDecimal("0.00000001")
         );
 
-        Crypto crypto = createBitcoinCrypto();
+        Crypto bitcoin = TestDataFactory.createBitcoin();
+        Platform binance = TestDataFactory.createBinancePlatform();
 
-        when(cryptoRepository.findById("BITCOIN")).thenReturn(Optional.of(crypto));
+        when(cryptoRepository.findById(request.cryptoId())).thenReturn(Optional.of(bitcoin));
+        when(platformRepository.findById(request.platformId())).thenReturn(Optional.of(binance));
         when(userCryptoRepository.findByUserIdAndCryptoIdAndPlatformId(
-            request.userId(),
-            crypto.getId(),
-            request.platformId()
-        )).thenReturn(Optional.empty()); // No duplicate for this platform
+                request.userId(), request.cryptoId(), request.platformId()))
+                .thenReturn(Optional.empty());
 
         // When
-        UserCrypto result = interactor.execute(request);
+        UserCrypto result = createUserCryptoUseCase.execute(request);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getPlatformId()).isEqualTo("platform-789");
+        assertNotNull(result);
+        assertThat(result.getQuantity(), is(new BigDecimal("0.00"))); // Scaled to 2 decimal places
 
-        verify(userCryptoRepository).save(any(UserCrypto.class));
+        verify(userCryptoRepository, times(1)).save(any(UserCrypto.class));
     }
 
     @Test
-    void shouldAllowDifferentUsersToHaveSameCrypto() {
+    @DisplayName("Should handle large quantities correctly")
+    void shouldHandleLargeQuantitiesCorrectly() {
         // Given
-        CreateRequestDTO request = new CreateRequestDTO(
-            "user-999",  // Different user
-            "bitcoin",
-            "platform-456",
-            new BigDecimal("10")
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "bitcoin",
+                "binance-id",
+                new BigDecimal("999999.123456")
         );
 
-        Crypto crypto = createBitcoinCrypto();
+        Crypto bitcoin = TestDataFactory.createBitcoin();
+        Platform binance = TestDataFactory.createBinancePlatform();
 
-        when(cryptoRepository.findById("BITCOIN")).thenReturn(Optional.of(crypto));
+        when(cryptoRepository.findById(request.cryptoId())).thenReturn(Optional.of(bitcoin));
+        when(platformRepository.findById(request.platformId())).thenReturn(Optional.of(binance));
         when(userCryptoRepository.findByUserIdAndCryptoIdAndPlatformId(
-            request.userId(),
-            crypto.getId(),
-            request.platformId()
-        )).thenReturn(Optional.empty());
+                request.userId(), request.cryptoId(), request.platformId()))
+                .thenReturn(Optional.empty());
 
         // When
-        UserCrypto result = interactor.execute(request);
+        UserCrypto result = createUserCryptoUseCase.execute(request);
 
         // Then
-        assertThat(result).isNotNull();
-        assertThat(result.getUserId()).isEqualTo("user-999");
+        assertNotNull(result);
+        assertThat(result.getQuantity(), is(new BigDecimal("999999.12"))); // Scaled to 2 decimal places
 
-        verify(userCryptoRepository).save(any(UserCrypto.class));
+        verify(userCryptoRepository, times(1)).save(any(UserCrypto.class));
+    }
+
+    @Test
+    @DisplayName("Should use crypto ID from found crypto entity")
+    void shouldUseCryptoIdFromFoundCryptoEntity() {
+        // Given
+        CreateCryptoRequestModel request = new CreateCryptoRequestModel(
+                "user-123",
+                "bitcoin",
+                "binance-id",
+                new BigDecimal("1.0")
+        );
+
+        Crypto bitcoin = TestDataFactory.createBitcoin();
+        Platform binance = TestDataFactory.createBinancePlatform();
+
+        when(cryptoRepository.findById(request.cryptoId())).thenReturn(Optional.of(bitcoin));
+        when(platformRepository.findById(request.platformId())).thenReturn(Optional.of(binance));
+        when(userCryptoRepository.findByUserIdAndCryptoIdAndPlatformId(
+                any(), any(), any())).thenReturn(Optional.empty());
+
+        // When
+        UserCrypto result = createUserCryptoUseCase.execute(request);
+
+        // Then
+        assertNotNull(result);
+        verify(userCryptoRepository, times(1)).findByUserIdAndCryptoIdAndPlatformId(
+                request.userId(), bitcoin.getId(), request.platformId());
     }
 }

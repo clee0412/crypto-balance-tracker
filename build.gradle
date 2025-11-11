@@ -78,8 +78,13 @@ tasks.named('bootBuildImage') {
 	builder = 'paketobuildpacks/builder-jammy-base:latest'
 }
 
-tasks.named('test') {
+test {
 	useJUnitPlatform()
+	testLogging {
+		events "passed", "skipped", "failed"
+		exceptionFormat "full"
+	}
+	maxParallelForks = Runtime.runtime.availableProcessors()
 }
 
 // Temporarily commented out due to compatibility issues with Gradle 8.12
@@ -89,15 +94,15 @@ tasks.named('test') {
 // 	afterEvaluate {
 // 		classDirectories.setFrom(files(classDirectories.files.collect {
 // 			fileTree(dir: it, exclude: [
-// 					"**/CryptoBalanceTrackerApplication**",
-// 					"**/configuration/**"
+// 					"**/Application**",
+// 					"**/config/**"
 // 			])
 // 		}))
 // 	}
 //
 // 	reports {
-// 		csv.required.set(true)
-// 		html.required.set(true)
+// 		csv.required = true
+// 		html.required = true
 // 	}
 // }
 //
