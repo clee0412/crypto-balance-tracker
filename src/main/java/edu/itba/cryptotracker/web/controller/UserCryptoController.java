@@ -5,6 +5,7 @@ import edu.itba.cryptotracker.web.dto.usercrypto.UpdateRequestDTO;
 import edu.itba.cryptotracker.web.dto.usercrypto.*;
 import edu.itba.cryptotracker.web.presenter.usercrypto.UserCryptoRestMapper;
 import edu.itba.cryptotracker.domain.entity.usercrypto.UserCrypto;
+import edu.itba.cryptotracker.domain.exception.UserCryptoNotFoundException;
 import edu.itba.cryptotracker.domain.usecase.usercrypto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -50,6 +51,9 @@ public class UserCryptoController {
         log.info("GET /api/user-cryptos/{}", id);
 
         UserCrypto userCrypto = queryService.findById(id);
+        if (userCrypto == null) {
+            throw UserCryptoNotFoundException.byId(id);
+        }
         return ResponseEntity.ok(mapper.toResponse(userCrypto));
     }
 

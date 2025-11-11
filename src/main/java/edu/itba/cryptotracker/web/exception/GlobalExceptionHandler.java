@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -139,45 +140,80 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<ValidationErrorResponse> handleValidationErrors(
-//        MethodArgumentNotValidException ex,
-//        HttpServletRequest request) {
-//        log.warn("Validation error: {}", ex.getMessage());
-//
-//        Map<String, String> errors = new HashMap<>();
-//        ex.getBindingResult().getAllErrors().forEach(error -> {
-//            String fieldName = ((FieldError) error).getField();
-//            String errorMessage = error.getDefaultMessage();
-//            errors.put(fieldName, errorMessage);
-//        });
-//
-//        ValidationErrorResponse validationError = ValidationErrorResponse.builder()
-//            .timestamp(LocalDateTime.now())
-//            .status(HttpStatus.BAD_REQUEST.value())
-//            .error("Validation Failed")
-//            .message("Request validation failed")
-//            .validationErrors(errors)
-//            .build();
-//
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
-//    }
-//
-//    @ExceptionHandler(ConstraintViolationException.class)
-//    public ResponseEntity<ErrorResponse> handleConstraintViolation(
-//        ConstraintViolationException ex,
-//        HttpServletRequest request) {
-//        log.warn("Constraint violation: {}", ex.getMessage());
-//
-//        ErrorResponse error = ErrorResponse.builder()
-//            .timestamp(LocalDateTime.now())
-//            .status(HttpStatus.BAD_REQUEST.value())
-//            .error("Bad Request")
-//            .message(ex.getMessage())
-//            .build();
-//
-//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-//    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationErrors(
+        MethodArgumentNotValidException ex,
+        HttpServletRequest request) {
+        log.warn("Validation error: {}", ex.getMessage());
+
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        ErrorResponse error = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.BAD_REQUEST.value())
+            .error("Validation Failed")
+            .message("Request validation failed: " + errors.toString())
+            .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(
+        ConstraintViolationException ex,
+        HttpServletRequest request) {
+        log.warn("Constraint violation: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.BAD_REQUEST.value())
+            .error("Bad Request")
+            .message(ex.getMessage())
+            .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(
+        MethodArgumentTypeMismatchException ex,
+        HttpServletRequest request) {
+        log.warn("Type mismatch: {}", ex.getMessage());
+
+        String message = String.format("Invalid value '%s' for parameter '%s'. Expected type: %s", 
+            ex.getValue(), ex.getName(), ex.getRequiredType().getSimpleName());
+
+        ErrorResponse error = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.BAD_REQUEST.value())
+            .error("Bad Request")
+            .message(message)
+            .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
+    @ExceptionHandler({com.fasterxml.jackson.core.JsonParseException.class, 
+                      org.springframework.http.converter.HttpMessageNotReadableException.class})
+    public ResponseEntity<ErrorResponse> handleJsonParseError(
+        Exception ex,
+        HttpServletRequest request) {
+        log.warn("JSON parse error: {}", ex.getMessage());
+
+        ErrorResponse error = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.BAD_REQUEST.value())
+            .error("Bad Request")
+            .message("Invalid JSON format")
+            .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 
     // ============= Generic Exception (Catch-all) =============
 

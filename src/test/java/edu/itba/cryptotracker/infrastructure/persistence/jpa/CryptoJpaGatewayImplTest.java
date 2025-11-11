@@ -124,7 +124,9 @@ class CryptoJpaGatewayImplTest {
     void shouldFindAllCryptosFromRepository() {
         // Given
         CryptoEntity entity1 = new CryptoEntity();
+        entity1.setId("bitcoin");
         CryptoEntity entity2 = new CryptoEntity();
+        entity2.setId("ethereum");
         List<CryptoEntity> entities = List.of(entity1, entity2);
         
         Crypto crypto1 = TestDataFactory.createBitcoin();

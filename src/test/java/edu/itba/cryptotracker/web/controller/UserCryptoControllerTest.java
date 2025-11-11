@@ -32,9 +32,11 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import org.junit.jupiter.api.BeforeEach;
 
 @WebMvcTest(UserCryptoController.class)
-@Import({TestConfig.class, UserCryptoRestMapper.class})
+@Import({TestConfig.class, UserCryptoRestMapper.class, edu.itba.cryptotracker.web.exception.GlobalExceptionHandler.class})
+@ContextConfiguration(classes = {UserCryptoController.class, UserCryptoRestMapper.class, TestConfig.class, edu.itba.cryptotracker.web.exception.GlobalExceptionHandler.class})
 class UserCryptoControllerTest {
 
     @Autowired
@@ -57,6 +59,11 @@ class UserCryptoControllerTest {
 
     @Autowired
     private TransferCryptoBetweenPlatformsUseCase transferUseCase;
+
+    @BeforeEach
+    void setUp() {
+        reset(queryService, createUseCase, updateUseCase, deleteUseCase, transferUseCase);
+    }
 
     @Test
     @DisplayName("Should get user crypto by ID successfully")
