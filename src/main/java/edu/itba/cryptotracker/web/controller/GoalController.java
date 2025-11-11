@@ -5,6 +5,11 @@ import edu.itba.cryptotracker.web.dto.goal.GoalRequestDTO;
 import edu.itba.cryptotracker.web.dto.goal.UpdateGoalRequestDTO;
 import edu.itba.cryptotracker.web.dto.goal.GoalResponseDTO;
 import edu.itba.cryptotracker.web.presenter.goal.GoalRestMapper;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +24,7 @@ import java.util.List;
 @RequestMapping("/api/v1/goals")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Goals", description = "Cryptocurrency portfolio goal management operations")
 public class GoalController {
 
     private final CreateGoalUseCase createGoalUC;
@@ -29,9 +35,13 @@ public class GoalController {
 
     private final GoalRestMapper mapper;
 
-    /**
-     * GET /api/goals
-     */
+    @Operation(
+        summary = "List all goals",
+        description = "Retrieves all cryptocurrency portfolio goals for the user"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved goals list")
+    })
     @GetMapping
     public ResponseEntity<List<GoalResponseDTO>> listGoals() {
         log.info("GET {}", "/goals");
@@ -40,11 +50,18 @@ public class GoalController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * GET /api/goals/{id}
-     */
+    @Operation(
+        summary = "Get goal by ID",
+        description = "Retrieves a specific cryptocurrency portfolio goal by its ID"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Goal found and returned"),
+        @ApiResponse(responseCode = "404", description = "Goal not found")
+    })
     @GetMapping("/{goalId}")
-    public ResponseEntity<GoalResponseDTO> getGoal(@PathVariable final String goalId) {
+    public ResponseEntity<GoalResponseDTO> getGoal(
+        @Parameter(description = "Goal ID", required = true)
+        @PathVariable final String goalId) {
         log.info("GET /goals/{}", goalId);
         return retrieveGoalUC.execute(goalId)
             .map(mapper::toResponse)
@@ -52,11 +69,18 @@ public class GoalController {
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * POST /api/goals
-     */
+    @Operation(
+        summary = "Create a new goal",
+        description = "Creates a new cryptocurrency portfolio goal for a specific crypto"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "201", description = "Goal created successfully"),
+        @ApiResponse(responseCode = "400", description = "Invalid request data or duplicate goal")
+    })
     @PostMapping
-    public ResponseEntity<?> createGoal(@Valid @RequestBody final GoalRequestDTO body) {
+    public ResponseEntity<?> createGoal(
+        @Parameter(description = "Goal creation request", required = true)
+        @Valid @RequestBody final GoalRequestDTO body) {
         log.info("POST /goals: cryptoId={}, qty={}", body.cryptoId(), body.goalQuantity());
         return createGoalUC.execute(body.cryptoId(), body.goalQuantity())
             .map(goal -> ResponseEntity.status(201).body(mapper.toResponse(goal)))
@@ -64,23 +88,39 @@ public class GoalController {
             .orElseGet(() -> ResponseEntity.badRequest().build());
     }
 
-    /**
-     * PATCH /api/goals/{id}
-     */
+    @Operation(
+        summary = "Update goal quantity",
+        description = "Updates the target quantity for an existing cryptocurrency portfolio goal"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Goal updated successfully"),
+        @ApiResponse(responseCode = "404", description = "Goal not found"),
+        @ApiResponse(responseCode = "400", description = "Invalid request data")
+    })
     @PatchMapping("/{goalId}")
-    public ResponseEntity<?> updateGoal(@PathVariable final String goalId,
-                                        @Valid @RequestBody final UpdateGoalRequestDTO body) {
+    public ResponseEntity<?> updateGoal(
+        @Parameter(description = "Goal ID", required = true)
+        @PathVariable final String goalId,
+        @Parameter(description = "Goal update request", required = true)
+        @Valid @RequestBody final UpdateGoalRequestDTO body) {
         log.info("PATCH /goals/{}: newQty={}", goalId, body.goalQuantity());
         return updateGoalUC.execute(goalId, body.goalQuantity())
             .map(goal -> ResponseEntity.ok(mapper.toResponse(goal)))
             .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
-    /**
-     * DELETE /api/goals/{id}
-     */
+    @Operation(
+        summary = "Delete a goal",
+        description = "Deletes a cryptocurrency portfolio goal by its ID"
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "204", description = "Goal deleted successfully"),
+        @ApiResponse(responseCode = "404", description = "Goal not found")
+    })
     @DeleteMapping("/{goalId}")
-    public ResponseEntity<Void> deleteGoal(@PathVariable final String goalId) {
+    public ResponseEntity<Void> deleteGoal(
+        @Parameter(description = "Goal ID", required = true)
+        @PathVariable final String goalId) {
         log.info("DELETE /goals/{}", goalId);
         final boolean deleted = deleteGoalUC.execute(goalId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();

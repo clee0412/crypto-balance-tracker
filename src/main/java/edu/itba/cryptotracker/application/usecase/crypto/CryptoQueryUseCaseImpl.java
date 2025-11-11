@@ -53,12 +53,30 @@ public class CryptoQueryUseCaseImpl implements CryptoQueryUseCase {
     }
 
     @Override
+    @Transactional
     public List<Crypto> search(String query, int limit) {
+        List<Crypto> results;
+
         if (query != null && !query.isBlank()) {
-            return cryptoProvider.searchCryptos(query, limit);
+            results = cryptoProvider.searchCryptos(query, limit);
+        } else {
+            results = cryptoProvider.fetchTopCryptos(limit);
         }
 
-        return cryptoProvider.fetchTopCryptos(limit);
+        // Cache all search results so they're available for subsequent GET by ID calls
+        if (!results.isEmpty()) {
+            log.debug("Caching {} search results", results.size());
+            results.forEach(crypto -> {
+                try {
+                    cryptoRepository.save(crypto);
+                    log.debug("Cached: {} ({})", crypto.getName(), crypto.getId());
+                } catch (Exception e) {
+                    log.warn("Failed to cache crypto {}: {}", crypto.getId(), e.getMessage());
+                }
+            });
+        }
+
+        return results;
     }
 
     private Crypto fetchAndCache(String coingeckoId) {
