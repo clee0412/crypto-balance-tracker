@@ -35,12 +35,12 @@ public interface PlatformRepositoryGateway {
     /**
      * Saves a platform.
      */
-    Platform save(Platform platform);
+//    Platform save(Platform platform);
 
     /**
      * Deletes a platform.
      */
-    void delete(Platform platform);
+//    void delete(Platform platform);
 
     /**
      * Checks if a platform exists by name.

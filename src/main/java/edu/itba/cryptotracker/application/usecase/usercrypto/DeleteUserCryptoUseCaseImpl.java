@@ -13,12 +13,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class DeleteUserCryptoUseCaseImpl implements DeleteUserCryptoUseCase {
 
-    private final UserCryptoRepositoryGateway userCryptoRepository; // the fact that its using a repository port with so many methods but it ultimately only uses one method is dubitating and suspicious
+    private final UserCryptoRepositoryGateway userCryptoRepository;
 
     @Transactional
     public void execute(UUID userCryptoId) {
-        userCryptoRepository.findById(userCryptoId)
-            .orElseThrow(() -> UserCryptoNotFoundException.byId(userCryptoId));
         userCryptoRepository.deleteById(userCryptoId);
+        // si no existe, la BD no elimina nada
     }
 }

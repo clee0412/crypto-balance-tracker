@@ -1,10 +1,9 @@
 package edu.itba.cryptotracker.application.usecase.usercrypto;
 
 import edu.itba.cryptotracker.domain.entity.usercrypto.UserCrypto;
-import edu.itba.cryptotracker.domain.exception.DuplicateUserCryptoException;
 import edu.itba.cryptotracker.domain.exception.UserCryptoNotFoundException;
 import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
-import edu.itba.cryptotracker.domain.model.usercrypto.UpdateRequest;
+import edu.itba.cryptotracker.web.dto.usercrypto.UpdateRequestDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +44,7 @@ class UpdateUserCryptoInteractorTest {
             "bitcoin"
         );
 
-        UpdateRequest request = new UpdateRequest(
+        UpdateRequestDTO request = new UpdateRequestDTO(
             userCryptoId,
             new BigDecimal("25.50"),
             "platform-456"  // Same platform
@@ -78,7 +77,7 @@ class UpdateUserCryptoInteractorTest {
             "bitcoin"
         );
 
-        UpdateRequest request = new UpdateRequest(
+        UpdateRequestDTO request = new UpdateRequestDTO(
             userCryptoId,
             new BigDecimal("15.00"),
             "platform-789"  // Different platform
@@ -124,7 +123,7 @@ class UpdateUserCryptoInteractorTest {
             "bitcoin"
         );
 
-        UpdateRequest request = new UpdateRequest(
+        UpdateRequestDTO request = new UpdateRequestDTO(
             userCryptoId,
             new BigDecimal("25.12345"),  // More than 2 decimals
             "platform-456"
@@ -143,7 +142,7 @@ class UpdateUserCryptoInteractorTest {
     @Test
     void shouldThrowExceptionWhenQuantityIsZero() {
         // Given
-        UpdateRequest request = new UpdateRequest(
+        UpdateRequestDTO request = new UpdateRequestDTO(
             UUID.randomUUID(),
             BigDecimal.ZERO,
             "platform-456"
@@ -161,7 +160,7 @@ class UpdateUserCryptoInteractorTest {
     @Test
     void shouldThrowExceptionWhenQuantityIsNegative() {
         // Given
-        UpdateRequest request = new UpdateRequest(
+        UpdateRequestDTO request = new UpdateRequestDTO(
             UUID.randomUUID(),
             new BigDecimal("-10"),
             "platform-456"
@@ -180,7 +179,7 @@ class UpdateUserCryptoInteractorTest {
     void shouldThrowExceptionWhenUserCryptoNotFound() {
         // Given
         UUID userCryptoId = UUID.randomUUID();
-        UpdateRequest request = new UpdateRequest(
+        UpdateRequestDTO request = new UpdateRequestDTO(
             userCryptoId,
             new BigDecimal("25.00"),
             "platform-456"
@@ -216,7 +215,7 @@ class UpdateUserCryptoInteractorTest {
             "bitcoin"
         );
 
-        UpdateRequest request = new UpdateRequest(
+        UpdateRequestDTO request = new UpdateRequestDTO(
             userCryptoId,
             new BigDecimal("15.00"),
             "platform-789"  // Trying to move to platform where duplicate exists
@@ -252,7 +251,7 @@ class UpdateUserCryptoInteractorTest {
             "bitcoin"
         );
 
-        UpdateRequest request = new UpdateRequest(
+        UpdateRequestDTO request = new UpdateRequestDTO(
             userCryptoId,
             new BigDecimal("10.00"),
             "platform-789"

@@ -1,8 +1,8 @@
 package edu.itba.cryptotracker.domain.exception;
 
-public class PlatformNotFoundException extends RuntimeException {
+public class PlatformNotFoundException extends CryptoTrackerException {
 
-    public PlatformNotFoundException(String message) {
-        super(message);
+    public PlatformNotFoundException(String platformId) {
+        super("Platform not found: " + platformId);
     }
 }

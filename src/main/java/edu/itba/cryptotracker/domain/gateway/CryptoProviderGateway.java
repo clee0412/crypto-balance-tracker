@@ -2,6 +2,7 @@ package edu.itba.cryptotracker.domain.gateway;
 
 import edu.itba.cryptotracker.domain.entity.crypto.Crypto;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CryptoProviderGateway {
@@ -15,4 +16,6 @@ public interface CryptoProviderGateway {
      * the complete Crypto entity.
      */
     Optional<Crypto> fetchCrypto(String coingeckoId);
+    List<Crypto> searchCryptos(String query, int limit);
+    List<Crypto> fetchTopCryptos(int limit);
 }

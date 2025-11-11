@@ -6,8 +6,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CryptoQueryUseCase {
-    Optional<Crypto> findById(String coingeckoId);
+    Crypto findById(String coingeckoId);
 
     List<Crypto> findAll();
 
+    List<Crypto> search(String query, int limit);
 }

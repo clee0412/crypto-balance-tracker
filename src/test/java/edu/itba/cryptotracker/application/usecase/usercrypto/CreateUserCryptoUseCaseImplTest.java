@@ -4,9 +4,8 @@ import edu.itba.cryptotracker.domain.entity.crypto.Crypto;
 import edu.itba.cryptotracker.domain.entity.crypto.LastKnownPrices;
 import edu.itba.cryptotracker.domain.entity.usercrypto.UserCrypto;
 import edu.itba.cryptotracker.domain.exception.CryptoNotFoundException;
-import edu.itba.cryptotracker.domain.exception.DuplicateUserCryptoException;
 import edu.itba.cryptotracker.domain.gateway.CryptoRepositoryGateway;
-import edu.itba.cryptotracker.domain.model.usercrypto.CreateRequest;
+import edu.itba.cryptotracker.web.dto.usercrypto.CreateRequestDTO;
 import edu.itba.cryptotracker.domain.usecase.platform.FindPlatformByIdUseCase;
 import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +56,7 @@ class CreateUserCryptoUseCaseImplTest {
     @Test
     void shouldCreateUserCryptoSuccessfully() {
         // Given
-        CreateRequest request = new CreateRequest(
+        CreateRequestDTO request = new CreateRequestDTO(
             "user-123",
             "bitcoin",
             "platform-456",
@@ -95,7 +94,7 @@ class CreateUserCryptoUseCaseImplTest {
     @Test
     void shouldNormalizeCryptoIdToUppercase() {
         // Given
-        CreateRequest request = new CreateRequest(
+        CreateRequestDTO request = new CreateRequestDTO(
             "user-123",
             "bitcoin",
             "platform-456",
@@ -118,7 +117,7 @@ class CreateUserCryptoUseCaseImplTest {
     @Test
     void shouldThrowExceptionWhenQuantityIsZero() {
         // Given
-        CreateRequest request = new CreateRequest(
+        CreateRequestDTO request = new CreateRequestDTO(
             "user-123",
             "bitcoin",
             "platform-456",
@@ -137,7 +136,7 @@ class CreateUserCryptoUseCaseImplTest {
     @Test
     void shouldThrowExceptionWhenQuantityIsNegative() {
         // Given
-        CreateRequest request = new CreateRequest(
+        CreateRequestDTO request = new CreateRequestDTO(
             "user-123",
             "bitcoin",
             "platform-456",
@@ -156,7 +155,7 @@ class CreateUserCryptoUseCaseImplTest {
     @Test
     void shouldThrowExceptionWhenCryptoNotFound() {
         // Given
-        CreateRequest request = new CreateRequest(
+        CreateRequestDTO request = new CreateRequestDTO(
             "user-123",
             "unknown-crypto",
             "platform-456",
@@ -177,7 +176,7 @@ class CreateUserCryptoUseCaseImplTest {
     @Test
     void shouldThrowExceptionWhenUserCryptoAlreadyExists() {
         // Given
-        CreateRequest request = new CreateRequest(
+        CreateRequestDTO request = new CreateRequestDTO(
             "user-123",
             "bitcoin",
             "platform-456",
@@ -216,7 +215,7 @@ class CreateUserCryptoUseCaseImplTest {
     @Test
     void shouldAllowSameCryptoOnDifferentPlatforms() {
         // Given
-        CreateRequest request = new CreateRequest(
+        CreateRequestDTO request = new CreateRequestDTO(
             "user-123",
             "bitcoin",
             "platform-789",  // Different platform
@@ -245,7 +244,7 @@ class CreateUserCryptoUseCaseImplTest {
     @Test
     void shouldAllowDifferentUsersToHaveSameCrypto() {
         // Given
-        CreateRequest request = new CreateRequest(
+        CreateRequestDTO request = new CreateRequestDTO(
             "user-999",  // Different user
             "bitcoin",
             "platform-456",

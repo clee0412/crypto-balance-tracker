@@ -5,7 +5,7 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 
 
-public record UserCryptoRequest(
+public record UserCryptoRequestDTO(
     @NotBlank(message = "Crypto name/symbol is required")
     String cryptoId,
 

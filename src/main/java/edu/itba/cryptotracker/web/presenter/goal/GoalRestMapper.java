@@ -1,6 +1,6 @@
 package edu.itba.cryptotracker.web.presenter.goal;
 
-import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
+import edu.itba.cryptotracker.domain.usecase.usercrypto.UserCryptoQueryUseCase;
 import edu.itba.cryptotracker.web.dto.goal.GoalResponseDTO;
 import edu.itba.cryptotracker.domain.entity.goal.Goal;
 import lombok.RequiredArgsConstructor;
@@ -12,11 +12,11 @@ import java.math.BigDecimal;
 @RequiredArgsConstructor
 public class GoalRestMapper {
 
-    private final UserCryptoRepositoryGateway repositoryGateway;
+    private final UserCryptoQueryUseCase userCryptoQueryUseCase;
 
     public GoalResponseDTO toResponse(final Goal goal) {
         final String cryptoId = goal.getCrypto().getId();
-        final BigDecimal actual = repositoryGateway.sumQuantityByCrypto(cryptoId);
+        final BigDecimal actual = userCryptoQueryUseCase.getTotalQuantityByCryptoId(cryptoId);
 
         final float progress = goal.getProgress(actual);
         final BigDecimal remaining = goal.getRemainingQuantity(actual);

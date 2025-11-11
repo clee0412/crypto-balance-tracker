@@ -8,8 +8,7 @@ import edu.itba.cryptotracker.domain.exception.DuplicateUserCryptoException;
 import edu.itba.cryptotracker.domain.exception.PlatformNotFoundException;
 import edu.itba.cryptotracker.domain.gateway.CryptoRepositoryGateway;
 import edu.itba.cryptotracker.domain.gateway.PlatformRepositoryGateway;
-import edu.itba.cryptotracker.domain.model.usercrypto.CreateRequest;
-import edu.itba.cryptotracker.domain.usecase.platform.FindPlatformByIdUseCase;
+import edu.itba.cryptotracker.domain.model.CreateCryptoRequestModel;
 import edu.itba.cryptotracker.domain.usecase.usercrypto.CreateUserCryptoUseCase;
 import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,7 @@ public class CreateUserCryptoUseCaseImpl implements CreateUserCryptoUseCase {
 
 
     @Transactional
-    public UserCrypto execute(CreateRequest request) {
+    public UserCrypto execute(CreateCryptoRequestModel request) {
 
         if (request.quantity().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
@@ -49,7 +48,7 @@ public class CreateUserCryptoUseCaseImpl implements CreateUserCryptoUseCase {
             .isPresent();
 
         if (alreadyExists) {
-            throw new DuplicateUserCryptoException("User crypto already exists: " + request.cryptoId() + " for platform " + request.platformId());
+            throw new DuplicateUserCryptoException(request.cryptoId(), request.platformId());
         }
 
         UserCrypto userCrypto = UserCrypto.create(

@@ -105,22 +105,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
-    @ExceptionHandler(DuplicatedPlatformException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicatedPlatform(
-        DuplicatedPlatformException ex,
-        HttpServletRequest request) {
-        log.warn("Duplicated platform: {}", ex.getMessage());
-
-        ErrorResponse error = ErrorResponse.builder()
-            .timestamp(LocalDateTime.now())
-            .status(HttpStatus.CONFLICT.value())
-            .error("Conflict")
-            .message(ex.getMessage())
-            .build();
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
-    }
-
     @ExceptionHandler(ExternalApiException.class)
     public ResponseEntity<ErrorResponse> handleExternalApiException(
         ExternalApiException ex,
@@ -211,5 +195,34 @@ public class GlobalExceptionHandler {
             .build();
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<ErrorResponse> handleNullPointer(NullPointerException ex) {
+        log.error("Null pointer exception: {}", ex.getMessage());
+
+        String message = ex.getMessage();
+        if (message != null && message.contains("marked non-null but is null")) {
+            ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(400)
+                .error("Bad Request")
+                .message("Required field is missing: " + extractFieldName(message))
+                .build();
+            return ResponseEntity.badRequest().body(error);
+        }
+
+        ErrorResponse error = ErrorResponse.builder()
+            .timestamp(LocalDateTime.now())
+            .status(500)
+            .error("Internal Server Error")
+            .message("An unexpected error occurred")
+            .build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
+    }
+
+    private String extractFieldName(String message) {
+        int endIndex = message.indexOf(" is marked");
+        return endIndex > 0 ? message.substring(0, endIndex) : "unknown field";
     }
 }

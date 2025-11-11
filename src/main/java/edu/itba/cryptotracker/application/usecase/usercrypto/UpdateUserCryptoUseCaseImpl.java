@@ -3,7 +3,7 @@ package edu.itba.cryptotracker.application.usecase.usercrypto;
 import edu.itba.cryptotracker.domain.entity.usercrypto.UserCrypto;
 import edu.itba.cryptotracker.domain.exception.DuplicateUserCryptoException;
 import edu.itba.cryptotracker.domain.exception.UserCryptoNotFoundException;
-import edu.itba.cryptotracker.domain.model.usercrypto.UpdateRequest;
+import edu.itba.cryptotracker.domain.model.UpdateCryptoRequestModel;
 import edu.itba.cryptotracker.domain.usecase.usercrypto.UpdateUserCryptoUseCase;
 import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ public class UpdateUserCryptoUseCaseImpl implements UpdateUserCryptoUseCase {
     private final UserCryptoRepositoryGateway userCryptoRepository;
 
     @Transactional
-    public UserCrypto execute(UpdateRequest request) {
+    public UserCrypto execute(UpdateCryptoRequestModel request) {
         if (request.newQuantity().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Quantity must be positive");
         }
@@ -39,8 +39,7 @@ public class UpdateUserCryptoUseCaseImpl implements UpdateUserCryptoUseCase {
                 .isPresent();
 
             if (duplicateExists) {
-                throw new DuplicateUserCryptoException(
-                    "User crypto with id " + userCrypto.getCryptoId() + " already exists for platform " + request.newPlatformId()
+                throw new DuplicateUserCryptoException(userCrypto.getCryptoId(), request.newPlatformId()
                 );
             }
 

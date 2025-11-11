@@ -1,8 +1,7 @@
 package edu.itba.cryptotracker.web.controller;
 
-import edu.itba.cryptotracker.domain.model.usercrypto.CreateRequest;
-import edu.itba.cryptotracker.domain.model.usercrypto.TransferRequest;
-import edu.itba.cryptotracker.domain.model.usercrypto.UpdateRequest;
+import edu.itba.cryptotracker.web.dto.usercrypto.CreateRequestDTO;
+import edu.itba.cryptotracker.web.dto.usercrypto.UpdateRequestDTO;
 import edu.itba.cryptotracker.web.dto.usercrypto.*;
 import edu.itba.cryptotracker.web.presenter.usercrypto.UserCryptoRestMapper;
 import edu.itba.cryptotracker.domain.entity.usercrypto.UserCrypto;
@@ -47,7 +46,7 @@ public class UserCryptoController {
         @ApiResponse(responseCode = "404", description = "User crypto not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<UserCryptoResponse> getUserCrypto(@PathVariable UUID id) {
+    public ResponseEntity<UserCryptoResponseDTO> getUserCrypto(@PathVariable UUID id) {
         log.info("GET /api/user-cryptos/{}", id);
 
         UserCrypto userCrypto = queryService.findById(id);
@@ -63,10 +62,10 @@ public class UserCryptoController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved user cryptos")
     })
     @GetMapping
-    public ResponseEntity<List<UserCryptoResponse>> getAllUserCryptos() {
+    public ResponseEntity<List<UserCryptoResponseDTO>> getAllUserCryptos() {
         log.info("GET /api/user-cryptos");
 
-        List<UserCryptoResponse> responses = queryService.findAll()
+        List<UserCryptoResponseDTO> responses = queryService.findAll()
             .stream()
             .map(mapper::toResponse)
             .toList();
@@ -82,11 +81,11 @@ public class UserCryptoController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved user cryptos")
     })
     @GetMapping("/platform/{platformId}")
-    public ResponseEntity<List<UserCryptoResponse>> getUserCryptosByPlatform(
+    public ResponseEntity<List<UserCryptoResponseDTO>> getUserCryptosByPlatform(
         @PathVariable String platformId) {
         log.info("GET /api/user-cryptos/platform/{}", platformId);
 
-        List<UserCryptoResponse> responses = queryService.findByPlatformId(platformId)
+        List<UserCryptoResponseDTO> responses = queryService.findByPlatformId(platformId)
             .stream()
             .map(mapper::toResponse)
             .toList();
@@ -101,11 +100,11 @@ public class UserCryptoController {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved user cryptos")
     })
     @GetMapping("/crypto/{cryptoId}")
-    public ResponseEntity<List<UserCryptoResponse>> getUserCryptosByCrypto(
+    public ResponseEntity<List<UserCryptoResponseDTO>> getUserCryptosByCrypto(
         @PathVariable String cryptoId) {
         log.info("GET /api/user-cryptos/crypto/{}", cryptoId);
 
-        List<UserCryptoResponse> responses = queryService.findByCryptoId(cryptoId)
+        List<UserCryptoResponseDTO> responses = queryService.findByCryptoId(cryptoId)
             .stream()
             .map(mapper::toResponse)
             .toList();
@@ -125,14 +124,14 @@ public class UserCryptoController {
         @ApiResponse(responseCode = "409", description = "Duplicate crypto on platform")
     })
     @PostMapping
-    public ResponseEntity<UserCryptoResponse> createUserCrypto(
-        @Valid @RequestBody UserCryptoRequest request) {
+    public ResponseEntity<UserCryptoResponseDTO> createUserCrypto(
+        @Valid @RequestBody UserCryptoRequestDTO request) {
         log.info("POST /api/user-cryptos - crypto: {}, platform: {}, quantity: {}",
             request.cryptoId(), request.platformId(), request.quantity());
 
         String userId = "user-123";  // TODO: Get from security context
 
-        var createRequest = new CreateRequest(
+        var createRequest = new edu.itba.cryptotracker.domain.model.CreateCryptoRequestModel(
             userId,
             request.cryptoId(),
             request.platformId(),
@@ -157,13 +156,13 @@ public class UserCryptoController {
         @ApiResponse(responseCode = "409", description = "Duplicate crypto on new platform")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<UserCryptoResponse> updateUserCrypto(
+    public ResponseEntity<UserCryptoResponseDTO> updateUserCrypto(
         @PathVariable UUID id,
-        @Valid @RequestBody UpdateUserCryptoRequest request) {
+        @Valid @RequestBody UpdateUserCryptoRequestDTO request) {
         log.info("PUT /api/user-cryptos/{} - quantity: {}, platform: {}",
             id, request.quantity(), request.platformId());
 
-        var updateRequest = new UpdateRequest(
+        var updateRequest = new edu.itba.cryptotracker.domain.model.UpdateCryptoRequestModel(
             id,
             request.quantity(),
             request.platformId()
@@ -197,30 +196,28 @@ public class UserCryptoController {
         description = "Transfers cryptocurrency from one platform to another with network fees"
     )
     @ApiResponses({
-        @ApiResponse(responseCode = "200", description = "Transfer completed successfully"),
+        @ApiResponse(responseCode = "204", description = "Transfer completed successfully"),
         @ApiResponse(responseCode = "400", description = "Invalid transfer parameters"),
         @ApiResponse(responseCode = "404", description = "Source user crypto not found")
     })
     @PostMapping("/transfer")
-    public ResponseEntity<TransferCryptoResponse> transferCrypto(
-        @Valid @RequestBody TransferCryptoRequest request) {
+    public ResponseEntity<TransferCryptoResponseDTO> transferCrypto(
+        @Valid @RequestBody TransferCryptoRequestDTO request) {
         log.info("POST /api/user-cryptos/transfer - from: {}, to: {}, amount: {}",
             request.userCryptoId(), request.toPlatformId(), request.quantityToTransfer());
 
-        UserCrypto source = queryService.findById(request.userCryptoId());
-
-        var transferRequest = new TransferRequest(
+        var transferRequest = new edu.itba.cryptotracker.domain.model.TransferCryptoRequestModel(
             request.userCryptoId(),
-            source.getPlatformId(),
+            request.fromPlatformId(),
             request.toPlatformId(),
             request.quantityToTransfer(),
             request.networkFee(),
             request.sendFullQuantity()
         );
 
-        transferUseCase.execute(transferRequest);
+        var transferResult = transferUseCase.execute(transferRequest);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(mapper.toTransferResponse(transferResult));
 
     }
 }

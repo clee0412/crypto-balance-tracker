@@ -5,12 +5,12 @@ import jakarta.validation.constraints.*;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-/**
- * Request DTO for transferring crypto between platforms.
- */
-public record TransferCryptoRequest(
+public record TransferCryptoRequestDTO(
     @NotNull(message = "UserCrypto ID is required")
     UUID userCryptoId,
+
+    @NotBlank(message = "Source platform is required")
+    String fromPlatformId,
 
     @NotBlank(message = "Destination platform is required")
     String toPlatformId,

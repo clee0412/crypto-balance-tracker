@@ -24,9 +24,6 @@ public class PlatformJpaGatewayImpl implements PlatformRepositoryGateway {
     private final PlatformProviderGateway platformProviderGateway;
     private final PlatformJpaMapper mapper;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Override
     public List<Platform> findAll() {
         return jpaRepository.findAll()
@@ -36,7 +33,6 @@ public class PlatformJpaGatewayImpl implements PlatformRepositoryGateway {
     }
 
     @Override
-    @Transactional
     public Optional<Platform> findById(String id) {
         return jpaRepository.findById(id)
             .map(mapper::toDomain)
@@ -62,21 +58,21 @@ public class PlatformJpaGatewayImpl implements PlatformRepositoryGateway {
             .toList();
     }
 
-    @Override
-    @Transactional
-    public Platform save(Platform platform) {
-        var entity = mapper.toEntity(platform);
-        var saved = entityManager.merge(entity);
-        entityManager.flush();
-        return mapper.toDomain(saved);
-    }
+//    @Override
+//    @Transactional
+//    public Platform save(Platform platform) {
+//        var entity = mapper.toEntity(platform);
+//        var saved = entityManager.merge(entity);
+//        entityManager.flush();
+//        return mapper.toDomain(saved);
+//    }
 
-    @Override
-    @Transactional
-    public void delete(Platform platform) {
-        var entity = mapper.toEntity(platform);
-        jpaRepository.delete(entity);
-    }
+//    @Override
+//    @Transactional
+//    public void delete(Platform platform) {
+//        var entity = mapper.toEntity(platform);
+//        jpaRepository.delete(entity);
+//    }
 
     @Override
     public boolean existsByName(String name) {

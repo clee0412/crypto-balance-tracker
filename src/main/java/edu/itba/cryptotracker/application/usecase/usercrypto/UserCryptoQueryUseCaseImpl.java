@@ -7,6 +7,7 @@ import edu.itba.cryptotracker.domain.gateway.UserCryptoRepositoryGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -30,5 +31,10 @@ public class UserCryptoQueryUseCaseImpl implements UserCryptoQueryUseCase {
 
     public List<UserCrypto> findByCryptoId(String cryptoId) {
         return userCryptoRepository.findAllByCryptoId(cryptoId);
+    }
+
+    @Override
+    public BigDecimal getTotalQuantityByCryptoId(String cryptoId) {
+        return userCryptoRepository.sumQuantityByCrypto(cryptoId);
     }
 }
